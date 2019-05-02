@@ -258,13 +258,6 @@ server <- function(input, output, session) {
   observeEvent(input$submit, {
     
     shinyjs::hide("background")
-    # Create a Progress object
-    progress <- shiny::Progress$new()
-    on.exit(progress$close())
-    
-    progress$set(message = "Fitting new reduced model. This might take a few minutes", value = 0.30)
-
-    progress$set(message = "Plotting...", value = 0.90)
 
    
     output$exac_risk <- renderPlotly({
@@ -275,7 +268,7 @@ server <- function(input, output, session) {
       return(GLOBAL_prediction_results_fev1_fvc)
     },
     include.rownames=T,
-    caption="FEV1/FVC Prediction",
+    caption="Exacerbation Prediction",
     caption.placement = getOption("xtable.caption.placement", "top"))
     
     #disabling inputs
