@@ -1,0 +1,299 @@
+library(shiny)
+library(shinythemes)
+library(ggplot2)
+library(plotly)
+library(data.table)
+library(rmarkdown) #for markdown file
+library(knitr) #for markdown file
+library(htmltools)
+library(accept)
+#options(shiny.error = browser) #debug, amin
+
+labelMandatory <- function(label) {
+  tagList(
+    label,
+    span("*", class = "mandatory_star")
+  )
+}
+
+
+appCSS <-
+  ".mandatory_star { color: red; }"
+
+jsResetCode <- "shinyjs.reset = function() {history.go(0)}" # Define the js method that resets the page
+
+
+source('./FEV_functions.R')
+
+
+
+button_width <- 160
+
+# fev1_lmer_function_output_summary <- NULL
+ui <- fluidPage(
+  shinyjs::useShinyjs(),
+  shinyjs::extendShinyjs(text = jsResetCode, functions = c("reset")),                      # Add the js code to the page
+  shinyjs::inlineCSS(appCSS),
+  theme = shinytheme("united"),
+  tags$head(tags$script(src = "message-handler.js")),
+  titlePanel("Acute COPD Exacerbation Prediction Tool (ACCEPT)"),
+  
+  sidebarLayout(
+    
+    sidebarPanel(
+      selectInput("gender", labelMandatory("Gender"),list('','female', 'male'), selected = NULL),
+      numericInput("age", labelMandatory("Age (year)"), value = NULL, min = 20, max = 100, step = 1),
+      selectInput("smoking", labelMandatory("Smoking Status"),list('','smoker', 'non-smoker'), selected = NULL),
+      numericInput("lastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = NULL, min = 0, max = 20,  step = 1),
+      numericInput("lastYrSevereExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = NULL, min = 0, max = 20,  step = 1),
+      numericInput('fev1', labelMandatory('FEV1 (L)'), value = NULL, min = 1, max = 5, step = 0.25),
+      numericInput('SGRQ', labelMandatory('St. Geroges Respiratory Questionnaire Score (SGRQ)'), value = NULL, min = 1, max = 100, step = 1),
+      numericInput("BMI", labelMandatory("Body mass index (BMI)"),value = NULL, min = 5, max = 50, step = 0.1),
+      selectInput("o2", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = NULL),
+      selectInput("statins", labelMandatory("Is the patient on statins?"),list('','yes', 'no'), selected = NULL),
+      selectInput("LAMA", labelMandatory("Is the patient on LAMAs?"),list('','yes', 'no'), selected = NULL),
+      selectInput("LABA", labelMandatory("Is the patient on LABAs?"),list('','yes', 'no'), selected = NULL),
+      selectInput("ICS", labelMandatory("Is the patient on inhaled coricosteroids?"),list('','yes', 'no'), selected = NULL),
+      
+      
+      br(), br(), icon("floppy-o"),"  ",
+      a(id = "toggleSaveLoad", "Save/Load Inputs", href = "#"),
+      shinyjs::hidden(
+        div(id = "SaveLoad",
+            downloadButton("save_inputs_button", "Save Inputs"),
+            fileInput("load_inputs_button","Choose CSV File to Load", accept = c("text/csv","text/comma-separated-values,text/plain",".csv"), buttonLabel = "Load Inputs")
+        )                 
+      ),
+      
+      uiOutput('inputParam'),
+      
+      br(),
+      br(),
+
+      shinyjs::hidden(
+        div(id = "FEV1_range",
+            HTML(paste(tags$span(style="color:red", "FEV1 must be between 1L and 5L")))
+        )
+      ),
+      shinyjs::hidden(
+        div(id = "SGRQ_range",
+            HTML(paste(tags$span(style="color:red", "St. George's Respiratory Questionnaire Score (SGRQ) must be between 0 and 100")))
+        )
+      ),
+      shinyjs::hidden(
+        div(id = "age_range",
+            HTML(paste(tags$span(style="color:red", "age must be between 20 and 100")))
+        )
+      ),
+      shinyjs::hidden(
+        div(id = "BMI_range",
+            HTML(paste(tags$span(style="color:red", "BMI out of range")))
+        )
+      ),
+      
+
+      checkboxInput("termsCheck",HTML(paste("I agree to ", tags$span(style="color:tomato", tags$a(href="./disclaimer.html", target="_blank", "terms")), sep = "")), FALSE),
+      actionButton("submit", "Run the prediction model"),
+      actionButton("reset_button", "Start over")
+    ),
+    
+    
+    mainPanel(
+      tabsetPanel(type="tabs",
+                  tabPanel("Exacerbation Risk",
+                          div(id = "background", includeMarkdown("./background.rmd")),
+                           checkboxInput("CI_COPD_risk", "Show Confidence Interval", value = FALSE, width = NULL),
+                           plotlyOutput("COPD_risk"),
+                           br(),
+                           tableOutput("table_COPD_risk")
+                  ),
+                  
+                  
+                  tabPanel("Terms",  includeMarkdown("./disclaimer.rmd")),
+                  tabPanel("About",  includeMarkdown("./about.rmd"), 
+                           imageOutput("logos"))
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  
+  
+  # Output Function Constants-------------------------------------------------------------------------------------------------
+  
+  coverageInterval <- "95% coverage interval"
+  xlab="Time (years)"
+  ylab="FEV1 (L)"
+  errorLineColor <- "darkcyan"
+  errorLineColorSmoker <- "salmon"
+  errorLineColorNonSmoker <- "darkcyan"
+  lineColorSmoker <- "red"
+  lineColorNonSmoker <- "dodgerblue4"
+  
+  buttonremove <- list("sendDataToCloud", "lasso2d", "pan2d" , "zoom2d", "hoverClosestCartesian")
+  
+  
+  # Shinyjs-----------------------------------------------------------------------------------------------------------
+  
+  
+  shinyjs::onclick("toggleSaveLoad",
+                   shinyjs::toggle(id = "SaveLoad", anim = TRUE)) 
+  
+  observe({
+
+    if (!input$termsCheck || is.na(input$fev1) || (input$fev1 == "") || is.na(input$SGRQ) || (input$SGRQ == "") || is.na (input$age) || (input$age == "") || is.null (input$gender) || (input$gender == "")) {
+      shinyjs::disable("submit")
+    }else {
+      shinyjs::enable("submit")
+    }
+      
+  })  
+  
+  observe({
+    if (!is.na(input$fev1) && (input$fev1!="")) {
+      if ((input$fev1 < 1)  || (input$fev1 > 5))  {
+        shinyjs::show (id = "FEV1_range", anim = TRUE)}
+      else shinyjs::hide (id = "FEV1_range", anim = TRUE)
+    }
+  })    
+  
+  observe({
+      if (!is.na(input$SGRQ) && (input$SGRQ!="")) {
+        if ((input$SGRQ< 0)  || (input$SGRQ > 100))  {
+          shinyjs::show (id = "SGRQ_range", anim = TRUE)}
+        else {
+          shinyjs::hide (id = "SGRQ_range", anim = TRUE)
+        }
+      }
+    })
+    
+  observe({
+    if (!is.na(input$age) && (input$age!="")) {
+      if ((input$age < 20)  || (input$age > 100))  {
+        shinyjs::show (id = "age_range", anim = TRUE)}
+      else shinyjs::hide (id = "age_range", anim = TRUE)
+    }
+  })  
+  
+ 
+  observe({
+    if (!is.na(input$BMI) && (input$BMI!="")) {
+      if ((input$BMI < 5)  || (input$BMI > 50))  {
+        shinyjs::show (id = "BMI_range", anim = TRUE)}
+      else shinyjs::hide (id = "BMI_range", anim = TRUE)
+    }
+  })  
+  
+  
+  
+  # Output Functions-----------------------------------------------------------------------------------------------------------
+
+  output$logos <- renderImage({
+    width  <- session$clientData$output_logos_width
+    height <- session$clientData$output_logos_height
+    # Return a list containing the filename
+    list(src = "./logos2.png",
+         contentType = 'image/png',
+         width = width,
+         alt = "This is alternate text")
+  }, deleteFile = FALSE)
+
+  
+  observeEvent(input$prev_input_cat2, {
+    updateTabsetPanel(session, "category", selected = "panel1")
+  })
+  
+  observeEvent(input$prev_input_cat3, {
+    updateTabsetPanel(session, "category", selected = "panel2")
+  })  
+  
+  observeEvent(input$prev_input_cat4, {
+    updateTabsetPanel(session, "category", selected = "panel3")
+  })
+  
+  observeEvent(input$next_input_cat1, {
+    updateTabsetPanel(session, "category", selected = "panel2")
+  })
+  
+  observeEvent(input$next_input_cat2, {
+    updateTabsetPanel(session, "category", selected = "panel3")
+  })
+  
+  observeEvent(input$next_input_cat3, {
+    updateTabsetPanel(session, "category", selected = "panel4")
+  })
+  
+  #Browse button - prompts user to select input values file and loads it into GUI
+  observeEvent(input$load_inputs_button,{
+    inFile <- input$load_inputs_button
+    if (is.null(inFile))
+      return(NULL)
+    
+    #load the data frame from the csv file
+    loadedInputs <- read.csv(inFile$datapath)
+    
+  })
+  
+  #'Clear Inputs' button - set all inputs to NULL
+  observeEvent(input$reset_button, {
+    shinyjs::js$reset()
+  })
+  
+  
+  #Save Inputs button - prompts user to save inputs to a csv file
+  output$save_inputs_button <- downloadHandler(
+    filename = function() {
+      paste("ACCEPT-input-", Sys.Date(), ".csv", sep = "")
+    },
+    
+    content = function(file) {
+      # browser()
+      #labels - 1st column in the data frame
+      #write.csv(FEV_data_frame, file)
+    }
+  )
+  
+  
+  observeEvent(input$submit, {
+    
+    shinyjs::hide("background")
+    # Create a Progress object
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    
+    progress$set(message = "Fitting new reduced model. This might take a few minutes", value = 0.30)
+
+    progress$set(message = "Plotting...", value = 0.90)
+
+   
+    output$exac_risk <- renderPlotly({
+      print (exac_risk_plot())
+    })
+    
+    output$table_exac_risk<-renderTable({
+      return(GLOBAL_prediction_results_fev1_fvc)
+    },
+    include.rownames=T,
+    caption="FEV1/FVC Prediction",
+    caption.placement = getOption("xtable.caption.placement", "top"))
+    
+    #disabling inputs
+    shinyjs::disable("fev") 
+    shinyjs::disable("SGRQ") 
+    shinyjs::disable("age") 
+    shinyjs::disable("gender")  
+    shinyjs::disable("BMI")
+    shinyjs::disable("submit") 
+    
+    
+    progress$set(message = "Done!", value = 1)
+    
+    
+  }) 
+  
+} #end of server <- function
+
+
+#Run the application
+shinyApp(ui = ui, server = server)
