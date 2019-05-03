@@ -106,7 +106,7 @@ ui <- fluidPage(
                            checkboxInput("CI_COPD_risk", "Show Confidence Interval", value = FALSE, width = NULL),
                            plotlyOutput("COPD_risk"),
                            br(),
-                           tableOutput("table_COPD_risk")
+                           tableOutput("table_exac_risk")
                   ),
                   
                   
@@ -267,7 +267,7 @@ server <- function(input, output, session) {
     patientData$smoker  <- input$smoker
     patientData$oxygen  <- input$oxygen
     patientData$statin  <- input$statin
-    patientData$LAMA0   <- input$LAMA
+    patientData$LAMA   <- input$LAMA
     patientData$LABA   <- input$LABA
     patientData$ICS    <- input$ICS
     patientData$FEV1 <- input$FEV1
@@ -286,18 +286,26 @@ server <- function(input, output, session) {
     patientData <- patientData  %>% mutate (smoker = recode (smoker, yes = 1, no = 0))
     patientData <- patientData  %>% mutate (oxygen = recode (oxygen, yes = 1, no = 0))
     patientData <- patientData  %>% mutate (statin = recode (statin, yes = 1, no = 0))
-    patientData <- patientData  %>% mutate (LAMA  = recode (LAMA0 , yes = 1, no = 0))
+    patientData <- patientData  %>% mutate (LAMA  = recode (LAMA , yes = 1, no = 0))
     patientData <- patientData  %>% mutate (LABA   = recode (LABA  , yes = 1, no = 0))
     patientData <- patientData  %>% mutate (ICS    = recode (ICS   , yes = 1, no = 0))
     
     results <- predictACCEPT(patientData = patientData)
+    results <- results %>% select(-c(ID, male, age, smoker, oxygen, statin, LAMA, LABA, ICS, FEV1, BMI, SGRQ, LastYrExacCount, 
+                                     LastYrSevExacCount, randomized_azithromycin,	randomized_statin,	randomized_LAMA,	
+                                     randomized_LABA,	randomized_ICS))
+  
+    probabilities <- results %>% select (contains("probability"))
+    rates <- results %>% select (contains("rate"))
     
+
     
     output$exac_risk <- renderPlotly({
-      print (exac_risk_plot())
+       
     })
     
-    output$table_exac_risk<-renderTable({
+    output$table_exac_risk <- renderTable({
+      return (probabilities)
     },
     include.rownames=T,
     caption="Exacerbation Prediction",
