@@ -6,6 +6,7 @@ library(data.table)
 library(rmarkdown) #for markdown file
 library(knitr) #for markdown file
 library(htmltools)
+library(dplyr)
 library(accept)
 #options(shiny.error = browser) #debug, amin
 
@@ -29,7 +30,7 @@ source('./FEV_functions.R')
 
 button_width <- 160
 
-# fev1_lmer_function_output_summary <- NULL
+# FEV1_lmer_function_output_summary <- NULL
 ui <- fluidPage(
   shinyjs::useShinyjs(),
   shinyjs::extendShinyjs(text = jsResetCode, functions = c("reset")),                      # Add the js code to the page
@@ -41,19 +42,19 @@ ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
-      selectInput("gender", labelMandatory("Gender"),list('','female', 'male'), selected = NULL),
-      numericInput("age", labelMandatory("Age (year)"), value = NULL, min = 20, max = 100, step = 1),
-      selectInput("smoking", labelMandatory("Smoking Status"),list('','smoker', 'non-smoker'), selected = NULL),
-      numericInput("lastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = NULL, min = 0, max = 20,  step = 1),
-      numericInput("lastYrSevereExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = NULL, min = 0, max = 20,  step = 1),
-      numericInput('fev1', labelMandatory('FEV1 (L)'), value = NULL, min = 1, max = 5, step = 0.25),
-      numericInput('SGRQ', labelMandatory('St. Geroges Respiratory Questionnaire Score (SGRQ)'), value = NULL, min = 1, max = 100, step = 1),
-      numericInput("BMI", labelMandatory("Body mass index (BMI)"),value = NULL, min = 5, max = 50, step = 0.1),
-      selectInput("o2", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = NULL),
-      selectInput("statins", labelMandatory("Is the patient on statins?"),list('','yes', 'no'), selected = NULL),
-      selectInput("LAMA", labelMandatory("Is the patient on LAMAs?"),list('','yes', 'no'), selected = NULL),
-      selectInput("LABA", labelMandatory("Is the patient on LABAs?"),list('','yes', 'no'), selected = NULL),
-      selectInput("ICS", labelMandatory("Is the patient on inhaled coricosteroids?"),list('','yes', 'no'), selected = NULL),
+      selectInput("male", labelMandatory("Gender"),list('','female', 'male'), selected = "female"),
+      numericInput("age", labelMandatory("Age (year)"), value = 50, min = 20, max = 100, step = 1),
+      selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'yes'),
+      numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 5, min = 0, max = 20,  step = 1),
+      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 5, min = 0, max = 20,  step = 1),
+      numericInput('FEV1', labelMandatory('FEV1 (L)'), value = 5, min = 1, max = 5, step = 0.25),
+      numericInput('SGRQ', labelMandatory('St. Geroges Respiratory Questionnaire Score (SGRQ)'), value = 5, min = 1, max = 100, step = 1),
+      numericInput("BMI", labelMandatory("Body mass index (BMI)"),value = 5, min = 5, max = 50, step = 0.1),
+      selectInput("oxygen", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = "yes"),
+      selectInput("statin", labelMandatory("Is the patient on statins?"),list('','yes', 'no'), selected = "yes"),
+      selectInput("LAMA", labelMandatory("Is the patient on LAMAs?"),list('','yes', 'no'), selected = "yes"),
+      selectInput("LABA", labelMandatory("Is the patient on LABAs?"),list('','yes', 'no'), selected = "yes"),
+      selectInput("ICS", labelMandatory("Is the patient on inhaled coricosteroids?"),list('','yes', 'no'), selected = "yes"),
       
       
       br(), br(), icon("floppy-o"),"  ",
@@ -140,19 +141,19 @@ server <- function(input, output, session) {
   shinyjs::onclick("toggleSaveLoad",
                    shinyjs::toggle(id = "SaveLoad", anim = TRUE)) 
   
-  observe({
-
-    if (!input$termsCheck || is.na(input$fev1) || (input$fev1 == "") || is.na(input$SGRQ) || (input$SGRQ == "") || is.na (input$age) || (input$age == "") || is.null (input$gender) || (input$gender == "")) {
-      shinyjs::disable("submit")
-    }else {
-      shinyjs::enable("submit")
-    }
-      
-  })  
+  # observe({
+  # 
+  #   if (!input$termsCheck || is.na(input$FEV1) || (input$FEV1 == "") || is.na(input$SGRQ) || (input$SGRQ == "") || is.na (input$age) || (input$age == "") || is.null (input$gender) || (input$gender == "")) {
+  #     shinyjs::disable("submit")
+  #   }else {
+  #     shinyjs::enable("submit")
+  #   }
+  #     
+  # })  
   
   observe({
-    if (!is.na(input$fev1) && (input$fev1!="")) {
-      if ((input$fev1 < 1)  || (input$fev1 > 5))  {
+    if (!is.na(input$FEV1) && (input$FEV1!="")) {
+      if ((input$FEV1 < 1)  || (input$FEV1 > 5))  {
         shinyjs::show (id = "FEV1_range", anim = TRUE)}
       else shinyjs::hide (id = "FEV1_range", anim = TRUE)
     }
@@ -259,13 +260,44 @@ server <- function(input, output, session) {
     
     shinyjs::hide("background")
 
-   
+    patientData <- samplePatients[1,]
+    
+    patientData$male <- input$male
+    patientData$age     <- input$age
+    patientData$smoker  <- input$smoker
+    patientData$oxygen  <- input$oxygen
+    patientData$statin  <- input$statin
+    patientData$LAMA0   <- input$LAMA
+    patientData$LABA   <- input$LABA
+    patientData$ICS    <- input$ICS
+    patientData$FEV1 <- input$FEV1
+    patientData$BMI   <- input$BMI
+    patientData$SGRQ   <- input$SGRQ
+    patientData$LastYrSevExacCount <- input$LastYrSevExacCount
+    patientData$LastYrExacCount <- input$LastYrExacCount
+    
+    patientData$randomized_azithromycin  <- 0
+    patientData$randomized_statin <- 0
+    patientData$randomized_LAMA <- 0
+    patientData$randomized_LABA <- 0
+    patientData$randomized_ICS <- 0
+  
+    patientData <- patientData  %>% mutate (male = recode (male, male = 1, female = 0))
+    patientData <- patientData  %>% mutate (smoker = recode (smoker, yes = 1, no = 0))
+    patientData <- patientData  %>% mutate (oxygen = recode (oxygen, yes = 1, no = 0))
+    patientData <- patientData  %>% mutate (statin = recode (statin, yes = 1, no = 0))
+    patientData <- patientData  %>% mutate (LAMA  = recode (LAMA0 , yes = 1, no = 0))
+    patientData <- patientData  %>% mutate (LABA   = recode (LABA  , yes = 1, no = 0))
+    patientData <- patientData  %>% mutate (ICS    = recode (ICS   , yes = 1, no = 0))
+    
+    results <- predictACCEPT(patientData = patientData)
+    
+    
     output$exac_risk <- renderPlotly({
       print (exac_risk_plot())
     })
     
     output$table_exac_risk<-renderTable({
-      return(GLOBAL_prediction_results_fev1_fvc)
     },
     include.rownames=T,
     caption="Exacerbation Prediction",
@@ -278,9 +310,6 @@ server <- function(input, output, session) {
     shinyjs::disable("gender")  
     shinyjs::disable("BMI")
     shinyjs::disable("submit") 
-    
-    
-    progress$set(message = "Done!", value = 1)
     
     
   }) 
