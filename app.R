@@ -1,6 +1,7 @@
 library(shiny)
 library(shinythemes)
 library(ggplot2)
+library(ggthemes)
 library(plotly)
 library(data.table)
 library(rmarkdown) #for markdown file
@@ -104,7 +105,7 @@ ui <- fluidPage(
                   tabPanel("Exacerbation Risk",
                           div(id = "background", includeMarkdown("./background.rmd")),
                            checkboxInput("CI_COPD_risk", "Show Confidence Interval", value = FALSE, width = NULL),
-                           plotlyOutput("COPD_risk"),
+                           plotlyOutput("exac_risk"), plotlyOutput("exac_rate"),
                            br(),
                            tableOutput("table_exac_risk")
                   ),
@@ -291,17 +292,31 @@ server <- function(input, output, session) {
     patientData <- patientData  %>% mutate (ICS    = recode (ICS   , yes = 1, no = 0))
     
     results <- predictACCEPT(patientData = patientData)
-    results <- results %>% select(-c(ID, male, age, smoker, oxygen, statin, LAMA, LABA, ICS, FEV1, BMI, SGRQ, LastYrExacCount, 
+    results <- results %>% select(-c(male, age, smoker, oxygen, statin, LAMA, LABA, ICS, FEV1, BMI, SGRQ, LastYrExacCount, 
                                      LastYrSevExacCount, randomized_azithromycin,	randomized_statin,	randomized_LAMA,	
                                      randomized_LABA,	randomized_ICS))
-  
-    probabilities <- results %>% select (contains("probability"))
-    rates <- results %>% select (contains("rate"))
+        
+   azithroResults <- results %>% select (ID, contains("azithro")) %>% mutate (Treatment = "With Azithromycin") %>%
+                                 rename_all(list(~str_replace(., "azithromycin_", "")))
+   noAzithroResults <- results %>% select (-contains("azithro")) %>% mutate (Treatment = "No Azithromycin")
+   
+   plotData <- rbind(azithroResults, noAzithroResults)
+   
+    probabilities <- plotData %>% select (Treatment, contains("probability"))
+    rates <- plotData %>% select (Treatment, contains("rate"))
     
 
     
     output$exac_risk <- renderPlotly({
-       
+      plotProb <- ggplot(probabilities, aes (x = Treatment)) + 
+                   geom_col(aes(y=predicted_exac_probability, fill=Treatment), position = "dodge") + theme_tufte()
+      ggplotly(plotProb)
+    })
+    
+    output$exac_rate <- renderPlotly({
+      plotProb <- ggplot(rates, aes (x = Treatment)) + 
+        geom_col(aes(y=predicted_exac_rate, fill=Treatment), position = "dodge") + theme_tufte()
+      ggplotly(plotProb)
     })
     
     output$table_exac_risk <- renderTable({
