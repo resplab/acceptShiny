@@ -354,15 +354,27 @@ server <- function(input, output, session) {
     caption="Exacerbation Prediction",
     caption.placement = getOption("xtable.caption.placement", "top"))
     
+    output$table_exac_rate <- renderTable({
+      return (rates)
+    },
+    include.rownames=T,
+    caption="Exacerbation Prediction",
+    caption.placement = getOption("xtable.caption.placement", "top"))
     #disabling inputs
-    shinyjs::disable("fev") 
+    shinyjs::disable("male")  
+    shinyjs::disable("smoker")  
+    shinyjs::disable("LastYrExacCount")  
+    shinyjs::disable("LastYrSevExacCount")  
+    shinyjs::disable("FEV1") 
     shinyjs::disable("SGRQ") 
     shinyjs::disable("age") 
-    shinyjs::disable("gender")  
     shinyjs::disable("BMI")
+    shinyjs::disable("oxygen")
+    shinyjs::disable("statin")
+    shinyjs::disable("LAMA")
+    shinyjs::disable("LABA")
+    shinyjs::disable("ICS")
     shinyjs::disable("submit") 
-    
-    
   }) 
   
 } #end of server <- function
