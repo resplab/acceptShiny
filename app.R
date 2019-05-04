@@ -102,13 +102,21 @@ ui <- fluidPage(
     
     mainPanel(
       tabsetPanel(type="tabs",
-                  tabPanel("Exacerbation Risk",
-                          div(id = "background", includeMarkdown("./background.rmd")),
+                  tabPanel("Exacerbation Rate",
+                           div(id = "background", includeMarkdown("./background.rmd")),
                            checkboxInput("CI_COPD_risk", "Show Confidence Interval", value = FALSE, width = NULL),
-                           plotlyOutput("exac_risk"), plotlyOutput("exac_rate"),
+                           splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
+                           br(),
+                           tableOutput("table_exac_rate")
+                  ),
+                  
+                  tabPanel("Exacerbation Risk",
+                           checkboxInput("CI_COPD_risk", "Show Confidence Interval", value = FALSE, width = NULL),
+                          splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_risk"), plotOutput("severe_exac_risk")),
                            br(),
                            tableOutput("table_exac_risk")
                   ),
+                  
                   
                   
                   tabPanel("Terms",  includeMarkdown("./disclaimer.rmd")),
@@ -307,16 +315,36 @@ server <- function(input, output, session) {
     
 
     
-    output$exac_risk <- renderPlotly({
-      plotProb <- ggplot(probabilities, aes (x = Treatment)) + 
-                   geom_col(aes(y=predicted_exac_probability, fill=Treatment), position = "dodge") + theme_tufte()
-      ggplotly(plotProb)
+    output$exac_risk <- renderPlot({
+      plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
+                   geom_col(aes(y=predicted_exac_probability, fill=Treatment)) + 
+                   geom_errorbar(aes(ymin = predicted_exac_probability_lower_PI, ymax = predicted_exac_probability_upper_PI), width = 0.2) +
+        theme_tufte()       
+      plotProb
     })
     
-    output$exac_rate <- renderPlotly({
+    output$severe_exac_risk <- renderPlot({
+      plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
+        geom_col(aes(y=predicted_severe_exac_probability, fill=Treatment)) + 
+        geom_errorbar(aes(ymin = predicted_severe_exac_probability_lower_PI, ymax = predicted_severe_exac_probability_upper_PI), width = 0.2) +
+        theme_tufte()       
+      plotProb
+    })
+    
+    output$exac_rate <- renderPlot({
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
-        geom_col(aes(y=predicted_exac_rate, fill=Treatment), position = "dodge") + theme_tufte()
-      ggplotly(plotProb)
+        geom_col(aes(y=predicted_exac_rate, fill=Treatment), position = "dodge") + 
+        geom_errorbar(aes(ymin = predicted_exac_rate_lower_PI, ymax = predicted_exac_rate_upper_PI), width = 0.2) +
+        theme_tufte() 
+      plotProb
+    })
+    
+    output$severe_exac_rate <- renderPlot({
+      plotProb <- ggplot(rates, aes (x = Treatment)) + 
+        geom_col(aes(y=predicted_severe_exac_rate, fill=Treatment), position = "dodge") + 
+        geom_errorbar(aes(ymin = predicted_severe_exac_rate_lower_PI, ymax = predicted_severe_exac_rate_upper_PI), width = 0.2) +
+        theme_tufte() 
+      plotProb
     })
     
     output$table_exac_risk <- renderTable({
