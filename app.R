@@ -267,6 +267,23 @@ server <- function(input, output, session) {
   
   observeEvent(input$submit, {
     
+    #disabling inputs
+    shinyjs::disable("male")  
+    shinyjs::disable("smoker")  
+    shinyjs::disable("LastYrExacCount")  
+    shinyjs::disable("LastYrSevExacCount")  
+    shinyjs::disable("FEV1") 
+    shinyjs::disable("SGRQ") 
+    shinyjs::disable("age") 
+    shinyjs::disable("BMI")
+    shinyjs::disable("oxygen")
+    shinyjs::disable("statin")
+    shinyjs::disable("LAMA")
+    shinyjs::disable("LABA")
+    shinyjs::disable("ICS")
+    shinyjs::disable("submit") 
+
+    
     shinyjs::hide("background")
 
     patientData <- samplePatients[1,]
@@ -317,7 +334,7 @@ server <- function(input, output, session) {
     
     output$exac_risk <- renderPlot({
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
-                   geom_col(aes(y=100*predicted_exac_probability, fill=Treatment), show.legend = FALSE, width = 0.6) + 
+                   geom_col(aes(y=100*predicted_exac_probability, fill=Treatment), show.legend = T, width = 0.7) + 
                    geom_errorbar(aes(ymin = 100*predicted_exac_probability_lower_PI, ymax = 100*predicted_exac_probability_upper_PI), width = 0.1) +
                    theme_tufte() + labs (title="1 yr Probablity of Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100))
       
@@ -334,7 +351,7 @@ server <- function(input, output, session) {
     
     output$exac_rate <- renderPlot({
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
-        geom_col(aes(y=predicted_exac_rate, fill=Treatment), show.legend = FALSE,  width = 0.6) + 
+        geom_col(aes(y=predicted_exac_rate, fill=Treatment), show.legend = T,  width = 0.7) + 
         geom_errorbar(aes(ymin = predicted_exac_rate_lower_PI, ymax = predicted_exac_rate_upper_PI), width = 0.1) +
         theme_tufte() + labs (title="Predicted Exacerbation Rate", x="", y="Exacerbations per year" ) 
       plotProb
@@ -361,21 +378,7 @@ server <- function(input, output, session) {
     include.rownames=T,
     caption="Exacerbation Prediction",
     caption.placement = getOption("xtable.caption.placement", "top"))
-    #disabling inputs
-    shinyjs::disable("male")  
-    shinyjs::disable("smoker")  
-    shinyjs::disable("LastYrExacCount")  
-    shinyjs::disable("LastYrSevExacCount")  
-    shinyjs::disable("FEV1") 
-    shinyjs::disable("SGRQ") 
-    shinyjs::disable("age") 
-    shinyjs::disable("BMI")
-    shinyjs::disable("oxygen")
-    shinyjs::disable("statin")
-    shinyjs::disable("LAMA")
-    shinyjs::disable("LABA")
-    shinyjs::disable("ICS")
-    shinyjs::disable("submit") 
+
   }) 
   
 } #end of server <- function
