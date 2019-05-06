@@ -104,14 +104,16 @@ ui <- fluidPage(
       tabsetPanel(type="tabs",
                   tabPanel("Exacerbation Rate",
                            div(id = "background", includeMarkdown("./background.rmd")),
-                           checkboxInput("CI_COPD_risk", "Show Confidence Interval", value = FALSE, width = NULL),
+                           shinyjs::hidden(radioButtons("error_rate", "Uncertainty Around Predictions", choices = list ( "Prediction Interval" = 1, 
+                             "Confidence Interval of the Mean" = 2), selected = 1)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
                            br(),
                            tableOutput("table_exac_rate")
                   ),
                   
                   tabPanel("Exacerbation Risk",
-                           checkboxInput("CI_COPD_risk", "Show Confidence Interval", value = FALSE, width = NULL),
+                           shinyjs::hidden(radioButtons("error_risk", "Uncertainty Around Predictions", choices = list ( "Prediction Interval" = 1, 
+                             "Confidence Interval of the Mean" = 2), selected = 1)),
                           splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_risk"), plotOutput("severe_exac_risk")),
                            br(),
                            tableOutput("table_exac_risk")
@@ -364,6 +366,9 @@ server <- function(input, output, session) {
         theme_tufte() + labs (title="Predicted Severe Exacerbation Rate", x="", y="Severe Exacerbations per year" ) 
       plotProb
     })
+    
+    shinyjs::show("error_risk")
+    shinyjs::show("error_rate")
     
     output$table_exac_risk <- renderTable({
       return (probabilities)
