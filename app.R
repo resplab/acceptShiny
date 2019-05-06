@@ -104,7 +104,7 @@ ui <- fluidPage(
       tabsetPanel(type="tabs",
                   tabPanel("Exacerbation Rate",
                            div(id = "background", includeMarkdown("./background.rmd")),
-                           shinyjs::hidden(radioButtons("error_rate", "Uncertainty Around Predictions", choices = list ( "Prediction Interval" = 1, 
+                           shinyjs::hidden(radioButtons("error_rate", inline = T, "Uncertainty Around Predictions", choices = list ( "Prediction Interval" = 1, 
                              "Confidence Interval of the Mean" = 2), selected = 1)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
                            br(),
@@ -112,7 +112,7 @@ ui <- fluidPage(
                   ),
                   
                   tabPanel("Exacerbation Risk",
-                           shinyjs::hidden(radioButtons("error_risk", "Uncertainty Around Predictions", choices = list ( "Prediction Interval" = 1, 
+                           shinyjs::hidden(radioButtons("error_risk", inline = T,  "Uncertainty Around Predictions", choices = list ( "Prediction Interval" = 1, 
                              "Confidence Interval of the Mean" = 2), selected = 1)),
                           splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_risk"), plotOutput("severe_exac_risk")),
                            br(),
