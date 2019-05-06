@@ -93,6 +93,12 @@ ui <- fluidPage(
         )
       ),
       
+      shinyjs::hidden(
+        div(id = "exac_range",
+            HTML(paste(tags$span(style="color:red", "Number of severe exacerbation cannot be larger than all exacerbations")))
+        )
+      ),
+      
 
       checkboxInput("termsCheck",HTML(paste("I agree to ", tags$span(style="color:tomato", tags$a(href="./disclaimer.html", target="_blank", "terms")), sep = "")), FALSE),
       actionButton("submit", "Run the prediction model"),
@@ -161,12 +167,21 @@ server <- function(input, output, session) {
   #   }
   #     
   # })  
-  
+
   observe({
     if (!is.na(input$FEV1) && (input$FEV1!="")) {
       if ((input$FEV1 < 1)  || (input$FEV1 > 5))  {
         shinyjs::show (id = "FEV1_range", anim = TRUE)}
       else shinyjs::hide (id = "FEV1_range", anim = TRUE)
+    }
+  })    
+  
+  
+  observe({
+    if ((!is.na(input$LastYrSevExacCount) && (input$LastYrSevExacCount!="")  && (!is.na(input$LastYrExacCount)) && (!is.na(input$LastYrExacCount)))) {
+      if ((input$LastYrSevExacCount) > (input$LastYrExacCount))  {
+        shinyjs::show (id = "exac_range", anim = TRUE)}
+      else shinyjs::hide (id = "exac_range", anim = TRUE)
     }
   })    
   
@@ -182,7 +197,7 @@ server <- function(input, output, session) {
     
   observe({
     if (!is.na(input$age) && (input$age!="")) {
-      if ((input$age < 20)  || (input$age > 100))  {
+      if ((input$age < 40)  || (input$age > 100))  {
         shinyjs::show (id = "age_range", anim = TRUE)}
       else shinyjs::hide (id = "age_range", anim = TRUE)
     }
@@ -203,7 +218,9 @@ server <- function(input, output, session) {
         is.na (input$BMI) || input$BMI == "" || is.na(input$LastYrSevExacCount) || input$LastYrSevExacCount == "" ||
         is.na (input$statin) || input$statin == "" || is.na(input$LastYrExacCount) || input$LastYrExacCount == "" ||
         is.na (input$LAMA) || input$LAMA == "" || is.na(input$LABA) || input$LABA == "" ||
-        is.na (input$ICS) || input$ICS == "" || is.na(input$oxygen) || input$oxygen == "" ||is.na(input$smoker) || input$smoker == ""
+        is.na (input$ICS) || input$ICS == "" || is.na(input$oxygen) || input$oxygen == "" ||is.na(input$smoker) || input$smoker == "" ||
+        ((input$LastYrSevExacCount) > (input$LastYrExacCount)) || ((input$BMI < 5)  || (input$BMI > 50))  || 
+        ((input$age < 40)  || (input$age > 100)) || ((input$SGRQ< 0)  || (input$SGRQ > 100))
     )
         {
       shinyjs::disable("submit")
