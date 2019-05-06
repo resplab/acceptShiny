@@ -337,33 +337,62 @@ server <- function(input, output, session) {
     output$exac_risk <- renderPlot({
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
                    geom_col(aes(y=100*predicted_exac_probability, fill=Treatment), show.legend = T, width = 0.7) + 
-                   geom_errorbar(aes(ymin = 100*predicted_exac_probability_lower_PI, ymax = 100*predicted_exac_probability_upper_PI), width = 0.1) +
                    theme_tufte() + labs (title="1 yr Probablity of Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100))
       
+      if (input$error_risk==1) {
+        plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_exac_probability_lower_PI, ymax = 100*predicted_exac_probability_upper_PI), width = 0.1)
+      }
+      
+      if (input$error_risk==2) {
+        plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_exac_probability_lower_CI, ymax = 100*predicted_exac_probability_upper_CI), width = 0.1)
+      }
       plotProb
     })
     
     output$severe_exac_risk <- renderPlot({
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
         geom_col(aes(y=100*predicted_severe_exac_probability, fill=Treatment), width = 0.7) + 
-        geom_errorbar(aes(ymin = 100*predicted_severe_exac_probability_lower_PI, ymax = 100*predicted_severe_exac_probability_upper_PI), width = 0.1) +
         theme_tufte() + labs (title="1 yr Probablity of Severe Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100))     
+      
+      if (input$error_risk==1) {
+        plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_severe_exac_probability_lower_PI, ymax = 100*predicted_severe_exac_probability_upper_PI), width = 0.1) 
+      }
+      
+      if (input$error_risk==2) {
+        plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_severe_exac_probability_lower_CI, ymax = 100*predicted_severe_exac_probability_upper_CI), width = 0.1) 
+      }
+      
       plotProb
     })
     
     output$exac_rate <- renderPlot({
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_exac_rate, fill=Treatment), show.legend = T,  width = 0.7) + 
-        geom_errorbar(aes(ymin = predicted_exac_rate_lower_PI, ymax = predicted_exac_rate_upper_PI), width = 0.1) +
         theme_tufte() + labs (title="Predicted Exacerbation Rate", x="", y="Exacerbations per year" ) 
+      
+      if (input$error_rate==1) {
+        plotProb <- plotProb + geom_errorbar(aes(ymin = predicted_exac_rate_lower_PI, ymax = predicted_exac_rate_upper_PI), width = 0.1) 
+      }
+      
+      if (input$error_rate==2) {
+        plotProb <- plotProb + geom_errorbar(aes(ymin = predicted_exac_rate_lower_CI, ymax = predicted_exac_rate_upper_CI), width = 0.1) 
+      }
       plotProb
     })
     
+      
     output$severe_exac_rate <- renderPlot({
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_severe_exac_rate, fill=Treatment),  width = 0.7) + 
-        geom_errorbar(aes(ymin = predicted_severe_exac_rate_lower_PI, ymax = predicted_severe_exac_rate_upper_PI), width = 0.1) +
-        theme_tufte() + labs (title="Predicted Severe Exacerbation Rate", x="", y="Severe Exacerbations per year" ) 
+        theme_tufte() + labs (title="Predicted Severe Exacerbation Rate", x="", y="Severe Exacerbations per year" )
+      
+      if (input$error_rate==1) {
+        plotProb <- plotProb +  geom_errorbar(aes(ymin = predicted_severe_exac_rate_lower_PI, ymax = predicted_severe_exac_rate_upper_PI), width = 0.1) 
+      }
+      
+      if (input$error_rate==2) {
+        plotProb <- plotProb +  geom_errorbar(aes(ymin = predicted_severe_exac_rate_lower_CI, ymax = predicted_severe_exac_rate_upper_CI), width = 0.1) 
+      }
       plotProb
     })
     
