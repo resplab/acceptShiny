@@ -60,14 +60,14 @@ ui <- fluidPage(
       selectInput("ICS", labelMandatory("Is the patient on inhaled coricosteroids?"),list('','yes', 'no'), selected = "yes"),
       
       
-      br(), br(), icon("floppy-o"),"  ",
-      a(id = "toggleSaveLoad", "Save/Load Inputs", href = "#"),
-      shinyjs::hidden(
-        div(id = "SaveLoad",
-            downloadButton("save_inputs_button", "Save Inputs"),
-            fileInput("load_inputs_button","Choose CSV File to Load", accept = c("text/csv","text/comma-separated-values,text/plain",".csv"), buttonLabel = "Load Inputs")
-        )                 
-      ),
+      # br(), br(), icon("floppy-o"),"  ",
+      # a(id = "toggleSaveLoad", "Save/Load Inputs", href = "#"),
+      # shinyjs::hidden(
+      #   div(id = "SaveLoad",
+      #       downloadButton("save_inputs_button", "Save Inputs"),
+      #       fileInput("load_inputs_button","Choose CSV File to Load", accept = c("text/csv","text/comma-separated-values,text/plain",".csv"), buttonLabel = "Load Inputs")
+      #   )                 
+      # ),
       
       uiOutput('inputParam'),
       
@@ -285,18 +285,18 @@ server <- function(input, output, session) {
   })
   
   
-  #Save Inputs button - prompts user to save inputs to a csv file
-  output$save_inputs_button <- downloadHandler(
-    filename = function() {
-      paste("ACCEPT-input-", Sys.Date(), ".csv", sep = "")
-    },
-    
-    content = function(file) {
-      # browser()
-      #labels - 1st column in the data frame
-      #write.csv(FEV_data_frame, file)
-    }
-  )
+  # #Save Inputs button - prompts user to save inputs to a csv file
+  # output$save_inputs_button <- downloadHandler(
+  #   filename = function() {
+  #     paste("ACCEPT-input-", Sys.Date(), ".csv", sep = "")
+  #   },
+  #   
+  #   content = function(file) {
+  #     # browser()
+  #     #labels - 1st column in the data frame
+  #     #write.csv(FEV_data_frame, file)
+  #   }
+  # )
   
   
   observeEvent(input$submit, {
