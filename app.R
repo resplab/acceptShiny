@@ -38,7 +38,7 @@ ui <- fluidPage(
   shinyjs::inlineCSS(appCSS),
   theme = shinytheme("united"),
   tags$head(tags$script(src = "message-handler.js")),
-  tags$head(tags$style(".shiny-notification {position: fixed; top: 60% ;left: 50%")),
+  tags$head(tags$style(".shiny-notification {position: fixed; top: 25% ;left: 50%")),
 
   titlePanel("Acute COPD Exacerbation Prediction Tool (ACCEPT)"),
   
