@@ -282,6 +282,10 @@ server <- function(input, output, session) {
   
   observeEvent(input$submit, {
     
+    # Create a Progress object
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    
     #disabling inputs
     shinyjs::disable("male")  
     shinyjs::disable("smoker")  
@@ -298,9 +302,8 @@ server <- function(input, output, session) {
     shinyjs::disable("ICS")
     shinyjs::disable("submit") 
 
+    progress$set(message = "Collecting the data...", value = 0.10)
     
-    shinyjs::hide("background")
-
     patientData <- samplePatients[1,]
     
     patientData$male <- input$male
@@ -317,6 +320,8 @@ server <- function(input, output, session) {
     patientData$LastYrSevExacCount <- input$LastYrSevExacCount
     patientData$LastYrExacCount <- input$LastYrExacCount
     
+    progress$set(message = "processing the data...", value = 0.20)
+    
     patientData$randomized_azithromycin  <- 0
     patientData$randomized_statin <- 0
     patientData$randomized_LAMA <- 0
@@ -331,14 +336,20 @@ server <- function(input, output, session) {
     patientData <- patientData  %>% mutate (LABA   = recode (LABA  , yes = 1, no = 0))
     patientData <- patientData  %>% mutate (ICS    = recode (ICS   , yes = 1, no = 0))
     
+    progress$set(message = "running the model...", value = 0.25)
+    
     results <- predictACCEPT(patientData = patientData)
     results <- results %>% select(-c(male, age, smoker, oxygen, statin, LAMA, LABA, ICS, FEV1, BMI, SGRQ, LastYrExacCount, 
                                      LastYrSevExacCount, randomized_azithromycin,	randomized_statin,	randomized_LAMA,	
                                      randomized_LABA,	randomized_ICS))
-        
+    
+    
    azithroResults <- results %>% select (ID, contains("azithro")) %>% mutate (Treatment = "With Azithromycin") %>%
                                  rename_all(list(~str_replace(., "azithromycin_", "")))
    noAzithroResults <- results %>% select (-contains("azithro")) %>% mutate (Treatment = "No Azithromycin")
+   
+   progress$set(message = "plotting...", value = 0.90)    
+   shinyjs::hide("background")
    
    plotData <- rbind(azithroResults, noAzithroResults)
    
@@ -425,8 +436,11 @@ server <- function(input, output, session) {
     include.rownames=T,
     caption="Exacerbation Prediction",
     caption.placement = getOption("xtable.caption.placement", "top"))
-
+    
+    progress$set(message = "Done!", value = 1)
+    
   }) 
+  
   
 } #end of server <- function
 
