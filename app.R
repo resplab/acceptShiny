@@ -197,7 +197,20 @@ server <- function(input, output, session) {
     }
   })  
   
-  
+  observe({
+    if (!input$termsCheck || is.na(input$FEV1) || (input$FEV1 == "") || is.na(input$SGRQ) || (input$SGRQ == "") || 
+        is.na (input$age) || (input$age == "") || is.null (input$male) || (input$male == "") || 
+        is.na (input$BMI) || input$BMI == "" || is.na(input$LastYrSevExacCount) || input$LastYrSevExacCount == "" ||
+        is.na (input$statin) || input$statin == "" || is.na(input$LastYrExacCount) || input$LastYrExacCount == "" ||
+        is.na (input$LAMA) || input$LAMA == "" || is.na(input$LABA) || input$LABA == "" ||
+        is.na (input$ICS) || input$ICS == "" || is.na(input$oxygen) || input$oxygen == "" ||is.na(input$smoker) || input$smoker == ""
+    )
+        {
+      shinyjs::disable("submit")
+    }else {
+      shinyjs::enable("submit")
+    }
+  })
   
   # Output Functions-----------------------------------------------------------------------------------------------------------
 
