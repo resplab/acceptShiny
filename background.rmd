@@ -8,7 +8,7 @@ Enter patient data in the left panel and press "Run the prediction model."
 Inputs marked with <span style="color:red">&#42;</span> are required. 
 
 <span style="color:Tomato">Warning: This tool SHOULD NOT BE USED to replace a diagnostic or treatment decision made by a physician. None of the predictors on the left panel have a causal interpretation in the model. Changing them for a single patient to estimate the effect of an intervention would be misleading and should be avoided.  </span>
-
 <br>
 
+For more information about the model, please refer to the [publication](http://resp.core.ubc.ca/publications/accept).
 
