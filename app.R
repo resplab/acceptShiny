@@ -118,7 +118,7 @@ ui <- fluidPage(
                                                                                                                                       "95% Confidence Interval - For Population Mean" = 2), selected = 1)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_risk"), plotOutput("severe_exac_risk")),
                            br(),
-                           HTML(paste(tags$span(style="color:tomato", (htmlOutput("text_risk"))))),
+                           htmlOutput("text_risk"),
                            br(),
                            tableOutput("table_exac_risk")
                            
@@ -129,7 +129,7 @@ ui <- fluidPage(
                              "95% Confidence Interval - For Population Mean" = 2), selected = 1)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
                            br(),
-                           HTML(paste(tags$span(style="color:tomato", (htmlOutput("text_rate"))))),
+                           htmlOutput("text_rate"),
                            br(),
                            tableOutput("table_exac_rate")
                            
@@ -457,14 +457,14 @@ server <- function(input, output, session) {
     shinyjs::show("error_rate")
     
     output$table_exac_risk <- renderTable({
-      return (probabilities)
+      return (probabilities %>% mutate("Predicted Exacerbation Risk" = predicted_exac_probability, "Predicted Severe Exacerbation Risk" = predicted_severe_exac_probability) %>% select (Treatment, contains("Exacerbation")))
     },
     include.rownames=T,
     caption="Exacerbation Prediction",
     caption.placement = getOption("xtable.caption.placement", "top"))
     
     output$table_exac_rate <- renderTable({
-      return (rates)
+      return (rates %>% mutate("Predicted Exacerbation Rate" = predicted_exac_rate, "Predicted Severe Exacerbation Risk" = predicted_severe_exac_rate) %>% select (Treatment, contains("Exacerbation")))
     },
     include.rownames=T,
     caption="Exacerbation Prediction",
