@@ -129,7 +129,7 @@ ui <- fluidPage(
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
                            br(),
                            tableOutput("table_exac_rate"),
-                           HTML(paste(tags$span(style="color:tomato", h4(textOutput("text_rate"))))),
+                           HTML(paste(tags$span(style="color:tomato", h4(textOutput("text_rate")))))
                            
                   ),
 
