@@ -51,14 +51,14 @@ ui <- fluidPage(
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'yes'),
       numericInput('FEV1', labelMandatory('FEV1 (L)'), value = 3.2, min = 1, max = 5, step = 0.25),
       numericInput('SGRQ', labelMandatory('St. Geroges Respiratory Questionnaire Score (SGRQ)'), value = 30, min = 1, max = 100, step = 1),
-      numericInput("BMI", labelMandatory("Body mass index (BMI)"),value = 5, min = 25, max = 50, step = 0.1),
+      numericInput("BMI", labelMandatory("Body mass index (BMI)"), value = 25, min = 5, max = 50, step = 0.1),
       selectInput("oxygen", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = "yes"),
       selectInput("statin", labelMandatory("Is the patient on statins?"),list('','yes', 'no'), selected = "no"),
       selectInput("LAMA", labelMandatory("Is the patient on LAMAs?"),list('','yes', 'no'), selected = "yes"),
       selectInput("LABA", labelMandatory("Is the patient on LABAs?"),list('','yes', 'no'), selected = "yes"),
       selectInput("ICS", labelMandatory("Is the patient on inhaled coricosteroids?"),list('','yes', 'no'), selected = "no"),
-      numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1),
-      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 1, min = 0, max = 20,  step = 1),
+      numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 5, min = 0, max = 20,  step = 1),
+      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 3, min = 0, max = 20,  step = 1),
       
       
       
@@ -114,7 +114,7 @@ ui <- fluidPage(
       tabsetPanel(type="tabs",
                   tabPanel("Exacerbation Risk",
                            div(id = "background", includeMarkdown("./background.rmd")),
-                           shinyjs::hidden(radioButtons("error_risk", inline = T,  "Uncertainty Around Predictions", choices = list ( "95% Prediction Interval - For Individual Patient" = 1, 
+                           shinyjs::hidden(radioButtons("error_risk", inline = T,  "Uncertainty:", choices = list ( "95% Prediction Interval - For Individual Patient" = 1, 
                                                                                                                                       "95% Confidence Interval - For Population Mean" = 2), selected = 1)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_risk"), plotOutput("severe_exac_risk")),
                            br(),
@@ -125,7 +125,7 @@ ui <- fluidPage(
                   ),
                   
                   tabPanel("Exacerbation Rate",
-                           shinyjs::hidden(radioButtons("error_rate", inline = T, "Uncertainty Around Predictions", choices = list ( "95% Prediction Interval - For Individual Patient" = 1, 
+                           shinyjs::hidden(radioButtons("error_rate", inline = T, "Uncertainty:", choices = list ( "95% Prediction Interval - For Individual Patient" = 1, 
                              "95% Confidence Interval - For Population Mean" = 2), selected = 1)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
                            br(),
@@ -471,7 +471,7 @@ server <- function(input, output, session) {
     caption.placement = getOption("xtable.caption.placement", "top"))
 
     output$text_risk <- renderUI({
-      azithro_risk_diff <- round((noAzithroResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 0)
+      azithro_risk_diff <- round((noAzithroResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 2)
       azithro_severe_risk_diff <- round((noAzithroResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 2)
       text <- paste0("Azithromycin (250mg, daily) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
                      azithro_severe_risk_diff , "% for severe exacerbations.")
