@@ -117,7 +117,10 @@ ui <- fluidPage(
                                                                                                                                       "95% Confidence Interval - For Population Mean" = 2), selected = 1)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_risk"), plotOutput("severe_exac_risk")),
                            br(),
-                           tableOutput("table_exac_risk")
+                           tableOutput("table_exac_risk"),
+                           br(),
+                           HTML(paste(tags$span(style="color:tomato", h4(textOutput("text_risk")))))
+                           
                   ),
                   
                   tabPanel("Exacerbation Rate",
@@ -125,7 +128,9 @@ ui <- fluidPage(
                              "95% Confidence Interval - For Population Mean" = 2), selected = 1)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
                            br(),
-                           tableOutput("table_exac_rate")
+                           tableOutput("table_exac_rate"),
+                           HTML(paste(tags$span(style="color:tomato", h4(textOutput("text_rate"))))),
+                           
                   ),
 
                   tabPanel("Terms",  includeMarkdown("./disclaimer.rmd")),
@@ -462,6 +467,21 @@ server <- function(input, output, session) {
     include.rownames=T,
     caption="Exacerbation Prediction",
     caption.placement = getOption("xtable.caption.placement", "top"))
+
+    output$text_risk <- renderText({
+      azithro_risk_diff <- round((noAzithroResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 0)
+      azithro_severe_risk_diff <- round((noAzithroResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 2)
+      text <- paste0("Azithromycin will result in an absolute risk reduction of ", azithro_risk_diff, "% for all exacerbations, and ", 
+                     azithro_severe_risk_diff , "% for severe exacerbations.")
+    })
+        
+    output$text_rate <- renderText({
+      #azithro_rate_diff <- rates["No Azithromycin", "predicted_exac_rate"] - rates["With Azithromycin", "predicted_exac_rate"] 
+      azithro_rate_diff <- round(noAzithroResults$predicted_exac_rate - azithroResults$predicted_exac_rate, 2)
+      azithro_severe_rate_diff <- round(noAzithroResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate, 2)
+      text <- paste0("Azithromycin will prevent an average of ", azithro_rate_diff, " exacerbations, and ", 
+                     azithro_severe_rate_diff , " severe exacerbations per year.")
+    })
     
     progress$set(message = "Done!", value = 1)
     
