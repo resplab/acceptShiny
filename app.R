@@ -49,8 +49,6 @@ ui <- fluidPage(
       selectInput("male", labelMandatory("Gender"),list('','female', 'male'), selected = "female"),
       numericInput("age", labelMandatory("Age (year)"), value = 70, min = 20, max = 100, step = 1),
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'yes'),
-      numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1),
-      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 1, min = 0, max = 20,  step = 1),
       numericInput('FEV1', labelMandatory('FEV1 (L)'), value = 3.2, min = 1, max = 5, step = 0.25),
       numericInput('SGRQ', labelMandatory('St. Geroges Respiratory Questionnaire Score (SGRQ)'), value = 30, min = 1, max = 100, step = 1),
       numericInput("BMI", labelMandatory("Body mass index (BMI)"),value = 5, min = 25, max = 50, step = 0.1),
@@ -59,6 +57,9 @@ ui <- fluidPage(
       selectInput("LAMA", labelMandatory("Is the patient on LAMAs?"),list('','yes', 'no'), selected = "yes"),
       selectInput("LABA", labelMandatory("Is the patient on LABAs?"),list('','yes', 'no'), selected = "yes"),
       selectInput("ICS", labelMandatory("Is the patient on inhaled coricosteroids?"),list('','yes', 'no'), selected = "no"),
+      numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1),
+      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 1, min = 0, max = 20,  step = 1),
+      
       
       
       # br(), br(), icon("floppy-o"),"  ",
