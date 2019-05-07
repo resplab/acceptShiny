@@ -475,8 +475,9 @@ server <- function(input, output, session) {
       azithro_severe_risk_diff <- round((noAzithroResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 2)
       text <- paste0("Azithromycin (250mg, daily) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
                      azithro_severe_risk_diff , "% for severe exacerbations.")
-      HTML(paste(tags$strong("Treatment Effects:"), text,  sep = '<br/>'))
-    })
+      treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
+      HTML(paste(tags$strong(treatmentTitle), tags$strong(text),  sep = '<br/>'))
+      })
         
     output$text_rate <- renderUI({
       #azithro_rate_diff <- rates["No Azithromycin", "predicted_exac_rate"] - rates["With Azithromycin", "predicted_exac_rate"] 
@@ -484,7 +485,8 @@ server <- function(input, output, session) {
       azithro_severe_rate_diff <- round(noAzithroResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate, 2)
       text <- paste0( "Azithromycin (250mg, daily) will prevent an average of ", azithro_rate_diff, " exacerbations, and ", 
                       azithro_severe_rate_diff , " severe exacerbations per year.")
-      HTML(paste(tags$strong("Treatment Effects:"), text,  sep = '<br/>'))
+      treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
+      HTML(paste(tags$strong(treatmentTitle), tags$strong(text),  sep = '<br/>'))
       
     })
     
