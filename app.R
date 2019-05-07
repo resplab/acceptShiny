@@ -6,6 +6,7 @@ library(stringr)
 library(data.table)
 library(rmarkdown) #for markdown file
 library(knitr) #for markdown file
+library(extrafont)
 library(htmltools)
 library(dplyr)
 library(accept)
@@ -71,8 +72,8 @@ ui <- fluidPage(
       
       uiOutput('inputParam'),
       
-      br(),
-      br(),
+      # br(),
+      # br(),
 
       shinyjs::hidden(
         div(id = "FEV1_range",
@@ -126,9 +127,7 @@ ui <- fluidPage(
                            br(),
                            tableOutput("table_exac_rate")
                   ),
-                  
-                  
-                  
+
                   tabPanel("Terms",  includeMarkdown("./disclaimer.rmd")),
                   tabPanel("About",  includeMarkdown("./about.rmd"), 
                            imageOutput("logos"))
@@ -157,8 +156,8 @@ server <- function(input, output, session) {
   # Shinyjs-----------------------------------------------------------------------------------------------------------
   
   
-  shinyjs::onclick("toggleSaveLoad",
-                   shinyjs::toggle(id = "SaveLoad", anim = TRUE)) 
+  #shinyjs::onclick("toggleSaveLoad",
+   #                shinyjs::toggle(id = "SaveLoad", anim = TRUE)) 
   
   # observe({
   # 
@@ -378,11 +377,11 @@ server <- function(input, output, session) {
 
     
     output$exac_risk <- renderPlot({
+      tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
+
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
                    geom_col(aes(y=100*predicted_exac_probability, fill=Treatment), show.legend = T, width = 0.7) + 
-                   theme_tufte(base_family = "sansserif") + labs (title="1 yr Probablity of Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
-                   theme(axis.text=element_text(size=12), axis.title=element_text(size=14))
-      
+                   theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="1 yr Probablity of Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) 
       if (input$error_risk==1) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_exac_probability_lower_PI, ymax = 100*predicted_exac_probability_upper_PI), width = 0.1)
       }
@@ -394,11 +393,11 @@ server <- function(input, output, session) {
     })
     
     output$severe_exac_risk <- renderPlot({
+      tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
+      
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
         geom_col(aes(y=100*predicted_severe_exac_probability, fill=Treatment), width = 0.7) + 
-        theme_tufte(base_family = "sansserif") + labs (title="1 yr Probablity of Severe Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
-        theme(axis.text=element_text(size=12), axis.title=element_text(size=14))
-      
+        theme_tufte(base_family = tuftefont, base_size = 14 ) + labs (title="1 yr Probablity of Severe Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) 
       
       if (input$error_risk==1) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_severe_exac_probability_lower_PI, ymax = 100*predicted_severe_exac_probability_upper_PI), width = 0.1) 
@@ -412,12 +411,11 @@ server <- function(input, output, session) {
     })
     
     output$exac_rate <- renderPlot({
+      tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
       upperInterval <- max (rates$predicted_exac_rate_upper_PI)
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_exac_rate, fill=Treatment), show.legend = T,  width = 0.7) + ylim(0, upperInterval) +
-        theme_tufte(base_family = "sansserif") + labs (title="Predicted Exacerbation Rate", x="", y="Exacerbations per year" ) + 
-        theme(axis.text=element_text(size=12), axis.title=element_text(size=14))
-      
+        theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="Predicted Exacerbation Rate", x="", y="Exacerbations per year" ) 
       
       if (input$error_rate==1) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = predicted_exac_rate_lower_PI, ymax = predicted_exac_rate_upper_PI), width = 0.1) 
@@ -431,11 +429,11 @@ server <- function(input, output, session) {
     
       
     output$severe_exac_rate <- renderPlot({
+      tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
       upperInterval <- max (rates$predicted_severe_exac_rate_upper_PI)
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_severe_exac_rate, fill=Treatment),  width = 0.7) + ylim(0, upperInterval) +
-        theme_tufte(base_family = "sansserif") + labs (title="Predicted Severe Exacerbation Rate", x="", y="Severe Exacerbations per year" ) +
-        theme(axis.text=element_text(size=12), axis.title=element_text(size=14))
+        theme_tufte(base_size = 14, base_family = tuftefont) + labs (title="Predicted Severe Exacerbation Rate", x="", y="Severe Exacerbations per year" ) 
       
       
       if (input$error_rate==1) {
