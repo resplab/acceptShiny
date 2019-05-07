@@ -46,18 +46,18 @@ ui <- fluidPage(
     
     sidebarPanel(
       selectInput("male", labelMandatory("Gender"),list('','female', 'male'), selected = "female"),
-      numericInput("age", labelMandatory("Age (year)"), value = 50, min = 20, max = 100, step = 1),
+      numericInput("age", labelMandatory("Age (year)"), value = 70, min = 20, max = 100, step = 1),
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'yes'),
-      numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 5, min = 0, max = 20,  step = 1),
-      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 5, min = 0, max = 20,  step = 1),
-      numericInput('FEV1', labelMandatory('FEV1 (L)'), value = 5, min = 1, max = 5, step = 0.25),
-      numericInput('SGRQ', labelMandatory('St. Geroges Respiratory Questionnaire Score (SGRQ)'), value = 5, min = 1, max = 100, step = 1),
-      numericInput("BMI", labelMandatory("Body mass index (BMI)"),value = 5, min = 5, max = 50, step = 0.1),
+      numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1),
+      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 1, min = 0, max = 20,  step = 1),
+      numericInput('FEV1', labelMandatory('FEV1 (L)'), value = 3.2, min = 1, max = 5, step = 0.25),
+      numericInput('SGRQ', labelMandatory('St. Geroges Respiratory Questionnaire Score (SGRQ)'), value = 30, min = 1, max = 100, step = 1),
+      numericInput("BMI", labelMandatory("Body mass index (BMI)"),value = 5, min = 25, max = 50, step = 0.1),
       selectInput("oxygen", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = "yes"),
-      selectInput("statin", labelMandatory("Is the patient on statins?"),list('','yes', 'no'), selected = "yes"),
+      selectInput("statin", labelMandatory("Is the patient on statins?"),list('','yes', 'no'), selected = "no"),
       selectInput("LAMA", labelMandatory("Is the patient on LAMAs?"),list('','yes', 'no'), selected = "yes"),
       selectInput("LABA", labelMandatory("Is the patient on LABAs?"),list('','yes', 'no'), selected = "yes"),
-      selectInput("ICS", labelMandatory("Is the patient on inhaled coricosteroids?"),list('','yes', 'no'), selected = "yes"),
+      selectInput("ICS", labelMandatory("Is the patient on inhaled coricosteroids?"),list('','yes', 'no'), selected = "no"),
       
       
       # br(), br(), icon("floppy-o"),"  ",
@@ -110,21 +110,21 @@ ui <- fluidPage(
     
     mainPanel(
       tabsetPanel(type="tabs",
-                  tabPanel("Exacerbation Rate",
+                  tabPanel("Exacerbation Risk",
                            div(id = "background", includeMarkdown("./background.rmd")),
-                           shinyjs::hidden(radioButtons("error_rate", inline = T, "Uncertainty Around Predictions", choices = list ( "Prediction Interval" = 1, 
-                             "Confidence Interval of the Mean" = 2), selected = 1)),
+                           shinyjs::hidden(radioButtons("error_risk", inline = T,  "Uncertainty Around Predictions", choices = list ( "95% Prediction Interval - For Individual Patient" = 1, 
+                                                                                                                                      "95% Confidence Interval - For Population Mean" = 2), selected = 1)),
+                           splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_risk"), plotOutput("severe_exac_risk")),
+                           br(),
+                           tableOutput("table_exac_risk")
+                  ),
+                  
+                  tabPanel("Exacerbation Rate",
+                           shinyjs::hidden(radioButtons("error_rate", inline = T, "Uncertainty Around Predictions", choices = list ( "95% Prediction Interval - For Individual Patient" = 1, 
+                             "95% Confidence Interval - For Population Mean" = 2), selected = 1)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
                            br(),
                            tableOutput("table_exac_rate")
-                  ),
-                  
-                  tabPanel("Exacerbation Risk",
-                           shinyjs::hidden(radioButtons("error_risk", inline = T,  "Uncertainty Around Predictions", choices = list ( "Prediction Interval" = 1, 
-                             "Confidence Interval of the Mean" = 2), selected = 1)),
-                          splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_risk"), plotOutput("severe_exac_risk")),
-                           br(),
-                           tableOutput("table_exac_risk")
                   ),
                   
                   
@@ -380,7 +380,8 @@ server <- function(input, output, session) {
     output$exac_risk <- renderPlot({
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
                    geom_col(aes(y=100*predicted_exac_probability, fill=Treatment), show.legend = T, width = 0.7) + 
-                   theme_tufte() + labs (title="1 yr Probablity of Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100))
+                   theme_tufte(base_family = "sansserif") + labs (title="1 yr Probablity of Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
+                   theme(axis.text=element_text(size=12), axis.title=element_text(size=14))
       
       if (input$error_risk==1) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_exac_probability_lower_PI, ymax = 100*predicted_exac_probability_upper_PI), width = 0.1)
@@ -395,7 +396,9 @@ server <- function(input, output, session) {
     output$severe_exac_risk <- renderPlot({
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
         geom_col(aes(y=100*predicted_severe_exac_probability, fill=Treatment), width = 0.7) + 
-        theme_tufte() + labs (title="1 yr Probablity of Severe Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100))     
+        theme_tufte(base_family = "sansserif") + labs (title="1 yr Probablity of Severe Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
+        theme(axis.text=element_text(size=12), axis.title=element_text(size=14))
+      
       
       if (input$error_risk==1) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_severe_exac_probability_lower_PI, ymax = 100*predicted_severe_exac_probability_upper_PI), width = 0.1) 
@@ -409,9 +412,12 @@ server <- function(input, output, session) {
     })
     
     output$exac_rate <- renderPlot({
+      upperInterval <- max (rates$predicted_exac_rate_upper_PI)
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
-        geom_col(aes(y=predicted_exac_rate, fill=Treatment), show.legend = T,  width = 0.7) + 
-        theme_tufte() + labs (title="Predicted Exacerbation Rate", x="", y="Exacerbations per year" ) 
+        geom_col(aes(y=predicted_exac_rate, fill=Treatment), show.legend = T,  width = 0.7) + ylim(0, upperInterval) +
+        theme_tufte(base_family = "sansserif") + labs (title="Predicted Exacerbation Rate", x="", y="Exacerbations per year" ) + 
+        theme(axis.text=element_text(size=12), axis.title=element_text(size=14))
+      
       
       if (input$error_rate==1) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = predicted_exac_rate_lower_PI, ymax = predicted_exac_rate_upper_PI), width = 0.1) 
@@ -425,9 +431,12 @@ server <- function(input, output, session) {
     
       
     output$severe_exac_rate <- renderPlot({
+      upperInterval <- max (rates$predicted_severe_exac_rate_upper_PI)
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
-        geom_col(aes(y=predicted_severe_exac_rate, fill=Treatment),  width = 0.7) + 
-        theme_tufte() + labs (title="Predicted Severe Exacerbation Rate", x="", y="Severe Exacerbations per year" )
+        geom_col(aes(y=predicted_severe_exac_rate, fill=Treatment),  width = 0.7) + ylim(0, upperInterval) +
+        theme_tufte(base_family = "sansserif") + labs (title="Predicted Severe Exacerbation Rate", x="", y="Severe Exacerbations per year" ) +
+        theme(axis.text=element_text(size=12), axis.title=element_text(size=14))
+      
       
       if (input$error_rate==1) {
         plotProb <- plotProb +  geom_errorbar(aes(ymin = predicted_severe_exac_rate_lower_PI, ymax = predicted_severe_exac_rate_upper_PI), width = 0.1) 
