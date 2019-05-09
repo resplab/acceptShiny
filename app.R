@@ -1,5 +1,6 @@
 library(shiny)
 library(shinythemes)
+library(plotly)
 library(ggplot2)
 library(ggthemes)
 library(stringr)
@@ -134,7 +135,11 @@ ui <- fluidPage(
                            tableOutput("table_exac_rate")
                            
                   ),
-
+                  tabPanel("3D Plot",  
+                           br(),
+                           br(),
+                           plotlyOutput("surfacePlot")),
+                  
                   tabPanel("Terms",  includeMarkdown("./disclaimer.rmd")),
                   tabPanel("About",  includeMarkdown("./about.rmd"), 
                            imageOutput("logos"))
@@ -490,6 +495,21 @@ server <- function(input, output, session) {
       
     })
     
+    output$surfacePlot <- renderPlotly({
+      
+      probs <- predictCountProb(noAzithroResults, n=10) * 100
+      
+
+      plot_ly(z = ~probs, width = 800, height = 800)  %>% add_surface()  %>%
+        layout(
+          title = "Predicted Probability of Experiencing Certain Number of Exacerbations",
+          scene = list(
+            xaxis = list(title = "No. Severe Exacerbations"),
+            yaxis = list(title = "No. All Exacerbations"),
+            zaxis = list(title = "Probability (%)",  nticks = 10),
+            autosize = T
+          ))
+    })
     progress$set(message = "Done!", value = 1)
     
   }) 
