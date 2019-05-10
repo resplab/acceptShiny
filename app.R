@@ -58,8 +58,8 @@ ui <- fluidPage(
       selectInput("LAMA", labelMandatory("Is the patient on LAMAs?"),list('','yes', 'no'), selected = "yes"),
       selectInput("LABA", labelMandatory("Is the patient on LABAs?"),list('','yes', 'no'), selected = "yes"),
       selectInput("ICS", labelMandatory("Is the patient on inhaled coricosteroids?"),list('','yes', 'no'), selected = "no"),
-      numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 5, min = 0, max = 20,  step = 1),
-      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 3, min = 0, max = 20,  step = 1),
+      numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 4, min = 0, max = 20,  step = 1),
+      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1),
       
       
       
@@ -543,16 +543,16 @@ server <- function(input, output, session) {
       text <- paste0("The heatmap shows the probablity of all possible numbers of exacerbation and severe exacerbations with 
                      the next year.")
       
-      plotTitle <- HTML(paste(tags$span(style="color:tomato", "Interpreation Guide:")))
-      HTML(paste(tags$strong(plotTitle), tags$strong(text),  sep = '<br/>'))
+      plotTitle <- HTML(paste(tags$span("Interpreation Guide:")))
+      HTML(paste(tags$strong(plotTitle), (text),  sep = '<br/>'))
     })
     
     output$text_surface <- renderUI({
       text <- paste0("The 3D plot shows the probablity of all possible numbers of exacerbation and severe exacerbations with 
                      the next year.")
       
-      plotTitle <- HTML(paste(tags$span(style="color:tomato", "Interpreation Guide:")))
-      HTML(paste(tags$strong(plotTitle), tags$strong(text),  sep = '<br/>'))
+      plotTitle <- HTML(paste(tags$span("Interpreation Guide:")))
+      HTML(paste(tags$strong(plotTitle), (text),  sep = '<br/>'))
     })
     progress$set(message = "Done!", value = 1)
     
