@@ -139,6 +139,10 @@ ui <- fluidPage(
                            br(),
                            br(),
                            plotlyOutput("surfacePlot")),
+                  tabPanel("Heat Map",
+                           br(),
+                           br(),
+                           plotlyOutput("heatMap")),
                   
                   tabPanel("Terms",  includeMarkdown("./disclaimer.rmd")),
                   tabPanel("About",  includeMarkdown("./about.rmd"), 
@@ -498,7 +502,6 @@ server <- function(input, output, session) {
     output$surfacePlot <- renderPlotly({
       
       probs <- predictCountProb(noAzithroResults, n=10) * 100
-      
 
       plot_ly(z = ~probs, width = 800, height = 800)  %>% add_surface()  %>%
         layout(
@@ -509,6 +512,25 @@ server <- function(input, output, session) {
             zaxis = list(title = "Probability (%)",  nticks = 10),
             autosize = T
           ))
+    })
+    
+    output$heatMap <- renderPlotly({
+      
+      probs <- predictCountProb(noAzithroResults, n=10) * 100
+      probs <- round(probs, 1)
+      heatPlotly <- t(probs)
+
+      buttonremove <- list("sendDataToCloud", "lasso2d", "pan2d" , "zoom2d", "hoverClosestCartesian")
+      
+      plot_ly(x = c("none", "one", "two", "3 or more"),
+              y = c("none", "one", "two", "3 or more"),
+              z = heatPlotly, type = "heatmap", hoverinfo = 'text', colors = colorRamp(c("steelblue4", "tomato")))  %>%
+        layout(
+          title = "Predicted Probability of Experiencing Certain Number of Exacerbations",
+          yaxis = list(title = "Number of Severe Exacerbations"),
+          xaxis = list(title = "Number of All Exacerbations")
+        ) %>% config(displaylogo=F, doubleClick=F,  displayModeBar=F, scrollZoom=F) %>% layout(xaxis=list(fixedrange=TRUE)) %>% layout(yaxis=list(fixedrange=TRUE)) 
+      
     })
     progress$set(message = "Done!", value = 1)
     
