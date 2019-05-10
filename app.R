@@ -515,8 +515,8 @@ server <- function(input, output, session) {
         layout(
           title = "Probability Distribution - No Azithromycin ",
           scene = list(
-            xaxis = list(title = "No. Severe Exacerbations"),
-            yaxis = list(title = "No. All Exacerbations"),
+            xaxis = list(title = "No. of Severe Exacerbations"),
+            yaxis = list(title = "No. of All Exacerbations"),
             zaxis = list(title = "Probability (%)",  nticks = 10),
             autosize = T
           )) %>% config(displaylogo=F)
