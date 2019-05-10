@@ -114,6 +114,7 @@ ui <- fluidPage(
     mainPanel(
       tabsetPanel(type="tabs",
                   tabPanel("Exacerbation Risk",
+                           br(),
                            div(id = "background", includeMarkdown("./background.rmd")),
                            shinyjs::hidden(radioButtons("error_risk", inline = T,  "Uncertainty:", choices = list ( "95% Prediction Interval - For Individual Patient" = 1, 
                                                                                                                                       "95% Confidence Interval - For Population Mean" = 2), selected = 1)),
@@ -126,6 +127,7 @@ ui <- fluidPage(
                   ),
                   
                   tabPanel("Exacerbation Rate",
+                           br(),
                            shinyjs::hidden(radioButtons("error_rate", inline = T, "Uncertainty:", choices = list ( "95% Prediction Interval - For Individual Patient" = 1, 
                              "95% Confidence Interval - For Population Mean" = 2), selected = 1)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
@@ -135,14 +137,18 @@ ui <- fluidPage(
                            tableOutput("table_exac_rate")
                            
                   ),
-                  tabPanel("3D Plot",  
-                           br(),
-                           br(),
-                           plotlyOutput("surfacePlot")),
                   tabPanel("Heat Map",
                            br(),
+                           htmlOutput("text_heatmap"),
                            br(),
                            plotlyOutput("heatMap")),
+                  
+                  tabPanel("3D Plot",  
+                           br(),
+                           htmlOutput("text_surface"),
+                           br(),
+                           plotlyOutput("surfacePlot")),
+
                   
                   tabPanel("Terms",  includeMarkdown("./disclaimer.rmd")),
                   tabPanel("About",  includeMarkdown("./about.rmd"), 
@@ -501,17 +507,17 @@ server <- function(input, output, session) {
     
     output$surfacePlot <- renderPlotly({
       
-      probs <- predictCountProb(noAzithroResults, n=10) * 100
+      Probability <- predictCountProb(noAzithroResults, n=10, shortened = F) * 100
 
-      plot_ly(z = ~probs, width = 800, height = 800)  %>% add_surface()  %>%
+      plot_ly(z = ~Probability, width = 800, height = 800)  %>% add_surface()  %>%
         layout(
-          title = "Predicted Probability of Experiencing Certain Number of Exacerbations",
+          title = "Probability Distribution ",
           scene = list(
             xaxis = list(title = "No. Severe Exacerbations"),
             yaxis = list(title = "No. All Exacerbations"),
             zaxis = list(title = "Probability (%)",  nticks = 10),
             autosize = T
-          ))
+          )) %>% config(displaylogo=F)
     })
     
     output$heatMap <- renderPlotly({
@@ -531,6 +537,22 @@ server <- function(input, output, session) {
           xaxis = list(title = "Number of All Exacerbations")
         ) %>% config(displaylogo=F, doubleClick=F,  displayModeBar=F, scrollZoom=F) %>% layout(xaxis=list(fixedrange=TRUE)) %>% layout(yaxis=list(fixedrange=TRUE)) 
       
+    })
+    
+    output$text_heatmap <- renderUI({
+      text <- paste0("The heatmap shows the probablity of all possible numbers of exacerbation and severe exacerbations with 
+                     the next year.")
+      
+      plotTitle <- HTML(paste(tags$span(style="color:tomato", "Interpreation Guide:")))
+      HTML(paste(tags$strong(plotTitle), tags$strong(text),  sep = '<br/>'))
+    })
+    
+    output$text_surface <- renderUI({
+      text <- paste0("The 3D plot shows the probablity of all possible numbers of exacerbation and severe exacerbations with 
+                     the next year.")
+      
+      plotTitle <- HTML(paste(tags$span(style="color:tomato", "Interpreation Guide:")))
+      HTML(paste(tags$strong(plotTitle), tags$strong(text),  sep = '<br/>'))
     })
     progress$set(message = "Done!", value = 1)
     
