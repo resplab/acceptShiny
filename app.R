@@ -51,7 +51,7 @@ ui <- fluidPage(
       numericInput("age", labelMandatory("Age (year)"), value = 70, min = 20, max = 100, step = 1),
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'yes'),
       numericInput('FEV1', labelMandatory('FEV1 (L)'), value = 3.2, min = 1, max = 5, step = 0.25),
-      numericInput('SGRQ', labelMandatory('St. Geroges Respiratory Questionnaire Score (SGRQ)'), value = 30, min = 1, max = 100, step = 1),
+      numericInput('SGRQ', labelMandatory('St. Georges Respiratory Questionnaire Score (SGRQ)'), value = 30, min = 1, max = 100, step = 1),
       numericInput("BMI", labelMandatory("Body mass index (BMI)"), value = 25, min = 5, max = 50, step = 0.1),
       selectInput("oxygen", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = "yes"),
       selectInput("statin", labelMandatory("Is the patient on statins?"),list('','yes', 'no'), selected = "no"),
@@ -141,9 +141,7 @@ ui <- fluidPage(
                            br(),
                            htmlOutput("text_heatmap"),
                            br(),
-                           plotlyOutput("heatMap"),
-                           br(),
-                           plotlyOutput("azithroHeatMap")),
+                           plotlyOutput("heatMap")),
                   
                   tabPanel("Probability Distribution",  
                            br(),
@@ -542,24 +540,24 @@ server <- function(input, output, session) {
     })
     
     
-    output$azithroHeatMap <- renderPlotly({
-      
-      probs <- predictCountProb(azithroResults, n=10) * 100
-      probs <- round(probs, 1)
-      heatPlotly <- t(probs)
-      
-      buttonremove <- list("sendDataToCloud", "lasso2d", "pan2d" , "zoom2d", "hoverClosestCartesian")
-      
-      plot_ly(x = c("none", "one", "two", "3 or more"),
-              y = c("none", "one", "two", "3 or more"),
-              z = heatPlotly, type = "heatmap", hoverinfo = 'text', colors = colorRamp(c("steelblue4", "tomato")))  %>%
-        layout(
-          title = "Likely Scenarios - with Azithromycin",
-          yaxis = list(title = "Number of Severe Exacerbations"),
-          xaxis = list(title = "Number of All Exacerbations")
-        ) %>% config(displaylogo=F, doubleClick=F,  displayModeBar=F, scrollZoom=F) %>% layout(xaxis=list(fixedrange=TRUE)) %>% layout(yaxis=list(fixedrange=TRUE)) 
-      
-    })
+    # output$azithroHeatMap <- renderPlotly({
+    #   
+    #   probs <- predictCountProb(azithroResults, n=10) * 100
+    #   probs <- round(probs, 1)
+    #   heatPlotly <- t(probs)
+    #   
+    #   buttonremove <- list("sendDataToCloud", "lasso2d", "pan2d" , "zoom2d", "hoverClosestCartesian")
+    #   
+    #   plot_ly(x = c("none", "one", "two", "3 or more"),
+    #           y = c("none", "one", "two", "3 or more"),
+    #           z = heatPlotly, type = "heatmap", hoverinfo = 'text', colors = colorRamp(c("steelblue4", "tomato")))  %>%
+    #     layout(
+    #       title = "Likely Scenarios - with Azithromycin",
+    #       yaxis = list(title = "Number of Severe Exacerbations"),
+    #       xaxis = list(title = "Number of All Exacerbations")
+    #     ) %>% config(displaylogo=F, doubleClick=F,  displayModeBar=F, scrollZoom=F) %>% layout(xaxis=list(fixedrange=TRUE)) %>% layout(yaxis=list(fixedrange=TRUE)) 
+    #   
+    # })
     
     output$text_heatmap <- renderUI({
       text <- paste0("The heatmap shows the probablity of all possible numbers of exacerbation and severe exacerbations with 
