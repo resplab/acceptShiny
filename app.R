@@ -472,33 +472,33 @@ server <- function(input, output, session) {
     shinyjs::show("error_rate")
     
     output$table_exac_risk <- renderTable({
-      return (probabilities %>% mutate("Predicted Exacerbation Risk" = predicted_exac_probability, "Predicted Severe Exacerbation Risk" = predicted_severe_exac_probability) %>% select (Treatment, contains("Exacerbation")))
+      return (probabilities %>% mutate("1 Yr Exacerbation Risk (%)" = predicted_exac_probability*100, "1 Yr Severe Exacerbation Risk (%)" = predicted_severe_exac_probability*100) %>% select (Treatment, contains("Exacerbation")))
     },
     include.rownames=T,
-    caption="Exacerbation Prediction",
+    caption="1 Year Exacerbation Risk Prediction",
     caption.placement = getOption("xtable.caption.placement", "top"))
     
     output$table_exac_rate <- renderTable({
-      return (rates %>% mutate("Predicted Exacerbation Rate" = predicted_exac_rate, "Predicted Severe Exacerbation Risk" = predicted_severe_exac_rate) %>% select (Treatment, contains("Exacerbation")))
+      return (rates %>% mutate("Exacerbations Rate (per year)" = predicted_exac_rate, "Severe Exacerbation Rate (per year)" = predicted_severe_exac_rate) %>% select (Treatment, contains("Exacerbation")))
     },
     include.rownames=T,
-    caption="Exacerbation Prediction",
+    caption="Predicted Average Number of Exacerbations per Year",
     caption.placement = getOption("xtable.caption.placement", "top"))
 
     output$text_risk <- renderUI({
       azithro_risk_diff <- round((noAzithroResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 2)
       azithro_severe_risk_diff <- round((noAzithroResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 2)
-      text <- paste0("Azithromycin (250mg, daily) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
+      text <- paste0("Based on MACRO trial, Azithromycin (250mg, daily) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
                      azithro_severe_risk_diff , "% for severe exacerbations.")
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
-      HTML(paste(tags$strong(treatmentTitle), tags$strong(text),  sep = '<br/>'))
+      HTML(paste(tags$strong(treatmentTitle), tags$strong(text), sep = '<br/>'))
       })
         
     output$text_rate <- renderUI({
       #azithro_rate_diff <- rates["No Azithromycin", "predicted_exac_rate"] - rates["With Azithromycin", "predicted_exac_rate"] 
       azithro_rate_diff <- round(noAzithroResults$predicted_exac_rate - azithroResults$predicted_exac_rate, 2)
       azithro_severe_rate_diff <- round(noAzithroResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate, 2)
-      text <- paste0( "Azithromycin (250mg, daily) will prevent an average of ", azithro_rate_diff, " exacerbations, and ", 
+      text <- paste0( "Based on MACRO trial, Azithromycin (250mg, daily) will prevent an average of ", azithro_rate_diff, " exacerbations, and ", 
                       azithro_severe_rate_diff , " severe exacerbations per year.")
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
       HTML(paste(tags$strong(treatmentTitle), tags$strong(text),  sep = '<br/>'))
