@@ -151,8 +151,9 @@ ui <- fluidPage(
 
                   
                   tabPanel("Terms",  includeMarkdown("./disclaimer.rmd")),
-                  tabPanel("About",  includeMarkdown("./about.rmd"), 
-                           imageOutput("logos"))
+                  tabPanel("About",  includeMarkdown("./about.rmd")#, 
+                           #imageOutput("logos")
+                           )
       )
     )
   )
@@ -403,7 +404,10 @@ server <- function(input, output, session) {
 
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
                    geom_col(aes(y=100*predicted_exac_probability, fill=Treatment), show.legend = T, width = 0.7) + 
-                   theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="1 yr Probablity of Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) 
+                   theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="1 yr Probablity of Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
+                  theme(axis.title.x=element_blank(),
+                        axis.text.x=element_blank(),
+                        axis.ticks.x=element_blank()) 
       if (input$error_risk==1) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_exac_probability_lower_PI, ymax = 100*predicted_exac_probability_upper_PI), width = 0.1)
       }
@@ -419,7 +423,10 @@ server <- function(input, output, session) {
       
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
         geom_col(aes(y=100*predicted_severe_exac_probability, fill=Treatment), width = 0.7) + 
-        theme_tufte(base_family = tuftefont, base_size = 14 ) + labs (title="1 yr Probablity of Severe Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) 
+        theme_tufte(base_family = tuftefont, base_size = 14 ) + labs (title="1 yr Probablity of Severe Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
+        theme(axis.title.x=element_blank(),
+              axis.text.x=element_blank(),
+              axis.ticks.x=element_blank()) 
       
       if (input$error_risk==1) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_severe_exac_probability_lower_PI, ymax = 100*predicted_severe_exac_probability_upper_PI), width = 0.1) 
@@ -437,7 +444,10 @@ server <- function(input, output, session) {
       upperInterval <- max (rates$predicted_exac_rate_upper_PI)
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_exac_rate, fill=Treatment), show.legend = T,  width = 0.7) + ylim(0, upperInterval) +
-        theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="Predicted Exacerbation Rate", x="", y="Exacerbations per year" ) 
+        theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="Predicted Exacerbation Rate", x="", y="Exacerbations per year" ) +
+        theme(axis.title.x=element_blank(),
+              axis.text.x=element_blank(),
+              axis.ticks.x=element_blank()) 
       
       if (input$error_rate==1) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = predicted_exac_rate_lower_PI, ymax = predicted_exac_rate_upper_PI), width = 0.1) 
@@ -455,7 +465,10 @@ server <- function(input, output, session) {
       upperInterval <- max (rates$predicted_severe_exac_rate_upper_PI)
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_severe_exac_rate, fill=Treatment),  width = 0.7) + ylim(0, upperInterval) +
-        theme_tufte(base_size = 14, base_family = tuftefont) + labs (title="Predicted Severe Exacerbation Rate", x="", y="Severe Exacerbations per year" ) 
+        theme_tufte(base_size = 14, base_family = tuftefont) + labs (title="Predicted Severe Exacerbation Rate", x="", y="Severe Exacerbations per year" ) +
+        theme(axis.title.x=element_blank(),
+              axis.text.x=element_blank(),
+              axis.ticks.x=element_blank()) 
       
       
       if (input$error_rate==1) {
@@ -474,6 +487,7 @@ server <- function(input, output, session) {
     output$table_exac_risk <- renderTable({
       return (probabilities %>% mutate("1 Yr Exacerbation Risk (%)" = predicted_exac_probability*100, "1 Yr Severe Exacerbation Risk (%)" = predicted_severe_exac_probability*100) %>% select (Treatment, contains("Exacerbation")))
     },
+    digits = 1,
     include.rownames=T,
     caption="1 Year Exacerbation Risk Prediction",
     caption.placement = getOption("xtable.caption.placement", "top"))
@@ -481,13 +495,14 @@ server <- function(input, output, session) {
     output$table_exac_rate <- renderTable({
       return (rates %>% mutate("Exacerbations Rate (per year)" = predicted_exac_rate, "Severe Exacerbation Rate (per year)" = predicted_severe_exac_rate) %>% select (Treatment, contains("Exacerbation")))
     },
+    digits = 1,
     include.rownames=T,
     caption="Predicted Average Number of Exacerbations per Year",
     caption.placement = getOption("xtable.caption.placement", "top"))
 
     output$text_risk <- renderUI({
-      azithro_risk_diff <- round((noAzithroResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 2)
-      azithro_severe_risk_diff <- round((noAzithroResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 2)
+      azithro_risk_diff <- round((noAzithroResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 1)
+      azithro_severe_risk_diff <- round((noAzithroResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 1)
       text <- paste0("Based on the MACRO trial, Azithromycin (250mg, daily) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
                      azithro_severe_risk_diff , "% for severe exacerbations.")
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
@@ -496,8 +511,8 @@ server <- function(input, output, session) {
         
     output$text_rate <- renderUI({
       #azithro_rate_diff <- rates["No Azithromycin", "predicted_exac_rate"] - rates["With Azithromycin", "predicted_exac_rate"] 
-      azithro_rate_diff <- round(noAzithroResults$predicted_exac_rate - azithroResults$predicted_exac_rate, 2)
-      azithro_severe_rate_diff <- round(noAzithroResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate, 2)
+      azithro_rate_diff <- round(noAzithroResults$predicted_exac_rate - azithroResults$predicted_exac_rate, 1)
+      azithro_severe_rate_diff <- round(noAzithroResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate, 1)
       text <- paste0( "Based on the MACRO trial, Azithromycin (250mg, daily) will prevent an average of ", azithro_rate_diff, " exacerbations, and ", 
                       azithro_severe_rate_diff , " severe exacerbations per year.")
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
