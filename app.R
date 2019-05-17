@@ -54,10 +54,10 @@ ui <- fluidPage(
       numericInput('SGRQ', labelMandatory('St. Georges Respiratory Questionnaire Score (SGRQ)'), value = 30, min = 1, max = 100, step = 1),
       numericInput("BMI", labelMandatory("Body mass index (BMI)"), value = 25, min = 5, max = 50, step = 0.1),
       selectInput("oxygen", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = "yes"),
-      selectInput("statin", labelMandatory("Is the patient on statins?"),list('','yes', 'no'), selected = "no"),
-      selectInput("LAMA", labelMandatory("Is the patient on LAMAs?"),list('','yes', 'no'), selected = "yes"),
-      selectInput("LABA", labelMandatory("Is the patient on LABAs?"),list('','yes', 'no'), selected = "yes"),
-      selectInput("ICS", labelMandatory("Is the patient on inhaled coricosteroids?"),list('','yes', 'no'), selected = "no"),
+      selectInput("statin", labelMandatory("Is the patient currently on statins?"),list('','yes', 'no'), selected = "no"),
+      selectInput("LAMA", labelMandatory("Is the patient currently on LAMAs?"),list('','yes', 'no'), selected = "yes"),
+      selectInput("LABA", labelMandatory("Is the patient currently on LABAs?"),list('','yes', 'no'), selected = "yes"),
+      selectInput("ICS", labelMandatory("Is the patient currently on inhaled coricosteroids?"),list('','yes', 'no'), selected = "no"),
       numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 4, min = 0, max = 20,  step = 1),
       numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1),
       
@@ -488,7 +488,7 @@ server <- function(input, output, session) {
     output$text_risk <- renderUI({
       azithro_risk_diff <- round((noAzithroResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 2)
       azithro_severe_risk_diff <- round((noAzithroResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 2)
-      text <- paste0("Based on MACRO trial, Azithromycin (250mg, daily) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
+      text <- paste0("Based on the MACRO trial, Azithromycin (250mg, daily) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
                      azithro_severe_risk_diff , "% for severe exacerbations.")
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
       HTML(paste(tags$strong(treatmentTitle), tags$strong(text), sep = '<br/>'))
@@ -498,7 +498,7 @@ server <- function(input, output, session) {
       #azithro_rate_diff <- rates["No Azithromycin", "predicted_exac_rate"] - rates["With Azithromycin", "predicted_exac_rate"] 
       azithro_rate_diff <- round(noAzithroResults$predicted_exac_rate - azithroResults$predicted_exac_rate, 2)
       azithro_severe_rate_diff <- round(noAzithroResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate, 2)
-      text <- paste0( "Based on MACRO trial, Azithromycin (250mg, daily) will prevent an average of ", azithro_rate_diff, " exacerbations, and ", 
+      text <- paste0( "Based on the MACRO trial, Azithromycin (250mg, daily) will prevent an average of ", azithro_rate_diff, " exacerbations, and ", 
                       azithro_severe_rate_diff , " severe exacerbations per year.")
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
       HTML(paste(tags$strong(treatmentTitle), tags$strong(text),  sep = '<br/>'))
