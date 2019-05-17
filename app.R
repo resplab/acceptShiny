@@ -121,8 +121,8 @@ ui <- fluidPage(
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_risk"), plotOutput("severe_exac_risk")),
                            br(),
                            htmlOutput("text_risk"),
-                           br(),
-                           tableOutput("table_exac_risk")
+                           br()
+                           #tableOutput("table_exac_risk")
                            
                   ),
                   
@@ -133,8 +133,8 @@ ui <- fluidPage(
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
                            br(),
                            htmlOutput("text_rate"),
-                           br(),
-                           tableOutput("table_exac_rate")
+                           br()
+                           #tableOutput("table_exac_rate")
                            
                   ),
                   tabPanel("Likely Scenarios",
@@ -538,7 +538,7 @@ server <- function(input, output, session) {
 
       plot_ly(z = ~Probability, width = 800, height = 800)  %>% add_surface()  %>%
         layout(
-          title = "Probability Distribution - No Azithromycin ",
+          title = "Probability Distribution",
           scene = list(
             xaxis = list(title = "No. of Severe Exacerbations"),
             yaxis = list(title = "No. of All Exacerbations"),
@@ -559,7 +559,7 @@ server <- function(input, output, session) {
               y = c("none", "one", "two", "3 or more"),
               z = heatPlotly, type = "heatmap", hoverinfo = 'text', colors = colorRamp(c("steelblue4", "tomato")))  %>%
         layout(
-          title = "Likely Scenarios - No Azithromycin",
+          title = "Likely Scenarios",
           yaxis = list(title = "Number of Severe Exacerbations"),
           xaxis = list(title = "Number of All Exacerbations")
         ) %>% config(displaylogo=F, doubleClick=F,  displayModeBar=F, scrollZoom=F) %>% layout(xaxis=list(fixedrange=TRUE)) %>% layout(yaxis=list(fixedrange=TRUE)) 
