@@ -1,4 +1,6 @@
 library(shiny)
+library(shinyjs)
+library(shinyhelper)
 library(shinythemes)
 library(plotly)
 library(ggplot2)
@@ -50,7 +52,7 @@ ui <- fluidPage(
       selectInput("male", labelMandatory("Gender"),list('','female', 'male'), selected = "female"),
       numericInput("age", labelMandatory("Age (year)"), value = 70, min = 20, max = 100, step = 1),
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'yes'),
-      numericInput('FEV1', labelMandatory('FEV1 (L)'), value = 3.2, min = 1, max = 5, step = 0.25),
+      numericInput('FEV1', labelMandatory('Post-bronchodilator FEV1 (L)'), value = 3.2, min = 1, max = 5, step = 0.25),
       numericInput('SGRQ', labelMandatory('St. Georges Respiratory Questionnaire Score (SGRQ)'), value = 30, min = 1, max = 100, step = 1),
       numericInput("BMI", labelMandatory("Body mass index (BMI)"), value = 25, min = 5, max = 50, step = 0.1),
       selectInput("oxygen", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = "yes"),
@@ -59,7 +61,11 @@ ui <- fluidPage(
       selectInput("LABA", labelMandatory("Is the patient currently on LABAs?"),list('','yes', 'no'), selected = "yes"),
       selectInput("ICS", labelMandatory("Is the patient currently on inhaled coricosteroids?"),list('','yes', 'no'), selected = "no"),
       numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 4, min = 0, max = 20,  step = 1),
-      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1),
+      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1)%>% 
+        helper(icon = "question-circle",
+               colour = "black",
+               type = "markdown",
+               content = "LastYrSevExacCount"),
       
       
       
@@ -161,9 +167,10 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
+
+  observe_helpers(help_dir = "helpfiles")
   
   # Output Function Constants-------------------------------------------------------------------------------------------------
-  
   coverageInterval <- "95% coverage interval"
   xlab="Time (years)"
   ylab="FEV1 (L)"
