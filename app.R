@@ -61,11 +61,11 @@ ui <- fluidPage(
       selectInput("LABA", labelMandatory("Is the patient currently on LABAs?"),list('','yes', 'no'), selected = "yes"),
       selectInput("ICS", labelMandatory("Is the patient currently on inhaled coricosteroids?"),list('','yes', 'no'), selected = "no"),
       numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 4, min = 0, max = 20,  step = 1),
-      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1)%>% 
+      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1) %>% 
         helper(icon = "question-circle",
                colour = "black",
                type = "markdown",
-               content = "LastYrSevExacCount"),
+               content = "severeExacerbations"),
       
       
       
@@ -450,7 +450,7 @@ server <- function(input, output, session) {
       }
       
       plotProb
-    })
+    })   
     
     output$exac_rate <- renderPlot({
       tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
