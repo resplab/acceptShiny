@@ -530,10 +530,10 @@ server <- function(input, output, session) {
         
     output$text_rate <- renderUI({
       #azithro_rate_diff <- rates["No Azithromycin", "predicted_exac_rate"] - rates["With Azithromycin", "predicted_exac_rate"] 
-      azithro_rate_diff <- round(noAzithroResults$predicted_exac_rate - azithroResults$predicted_exac_rate, 1)
-      azithro_severe_rate_diff <- round(noAzithroResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate, 1)
-      text <- paste0( "Based on the MACRO trial, Azithromycin (250mg, daily) will prevent an average of ", azithro_rate_diff, " exacerbations, and ", 
-                      azithro_severe_rate_diff , " severe exacerbations per year.")
+      azithro_rate_diff <- round(100 * (noAzithroResults$predicted_exac_rate - azithroResults$predicted_exac_rate), 0)
+      azithro_severe_rate_diff <- round(100 * (noAzithroResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate), 0)
+      text <- paste0( "Based on the MACRO trial, for every 100 people treated with Azithromycin (250mg, daily) an average of ", azithro_rate_diff, " exacerbations, and ", 
+                      azithro_severe_rate_diff , " severe exacerbations will be prevented every year.")
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
       HTML(paste(tags$strong(treatmentTitle), tags$strong(text),  sep = '<br/>'))
       
