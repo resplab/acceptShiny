@@ -59,7 +59,7 @@ ui <- fluidPage(
       selectInput("statin", labelMandatory("Is the patient currently on statins?"),list('','yes', 'no'), selected = "no"),
       selectInput("LAMA", labelMandatory("Is the patient currently on LAMAs?"),list('','yes', 'no'), selected = "yes"),
       selectInput("LABA", labelMandatory("Is the patient currently on LABAs?"),list('','yes', 'no'), selected = "yes"),
-      selectInput("ICS", labelMandatory("Is the patient currently on inhaled coricosteroids?"),list('','yes', 'no'), selected = "no"),
+      selectInput("ICS", labelMandatory("Is the patient currently on inhaled corticosteroids?"),list('','yes', 'no'), selected = "no"),
       numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 4, min = 0, max = 20,  step = 1),
       numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1) %>% 
         helper(icon = "question-circle",
