@@ -29,9 +29,6 @@ appCSS <-
 jsResetCode <- "shinyjs.reset = function() {history.go(0)}" # Define the js method that resets the page
 
 
-source('./FEV_functions.R')
-
-
 
 button_width <- 160
 
@@ -52,7 +49,7 @@ ui <- fluidPage(
       selectInput("male", labelMandatory("Gender"),list('','female', 'male'), selected = "female"),
       numericInput("age", labelMandatory("Age (year)"), value = 70, min = 20, max = 100, step = 1),
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'yes'),
-      numericInput('FEV1', labelMandatory('Post-bronchodilator FEV1 (L)'), value = 3.2, min = 1, max = 5, step = 0.25),
+      numericInput('FEV1', labelMandatory('Post-bronchodilator FEV1 (% predicted)'), value = 40, min = 0, max = 100, step = 1),
       numericInput('SGRQ', labelMandatory('St. Georges Respiratory Questionnaire Score (SGRQ)'), value = 30, min = 1, max = 100, step = 1),
       numericInput("BMI", labelMandatory("Body mass index (BMI)"), value = 25, min = 5, max = 50, step = 0.1),
       selectInput("oxygen", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = "yes"),
@@ -85,7 +82,7 @@ ui <- fluidPage(
 
       shinyjs::hidden(
         div(id = "FEV1_range",
-            HTML(paste(tags$span(style="color:red", "FEV1 must be between 1L and 5L")))
+            HTML(paste(tags$span(style="color:red", "FEV1 % predicted must be between 0% and 100%")))
         )
       ),
       shinyjs::hidden(
@@ -173,7 +170,7 @@ server <- function(input, output, session) {
   # Output Function Constants-------------------------------------------------------------------------------------------------
   coverageInterval <- "95% coverage interval"
   xlab="Time (years)"
-  ylab="FEV1 (L)"
+  ylab="FEV1 (% Predicted)"
   errorLineColor <- "darkcyan"
   errorLineColorSmoker <- "salmon"
   errorLineColorNonSmoker <- "darkcyan"
@@ -201,7 +198,7 @@ server <- function(input, output, session) {
 
   observe({
     if (!is.na(input$FEV1) && (input$FEV1!="")) {
-      if ((input$FEV1 < 1)  || (input$FEV1 > 5))  {
+      if ((input$FEV1 < 0)  || (input$FEV1 > 100))  {
         shinyjs::show (id = "FEV1_range", anim = TRUE)}
       else shinyjs::hide (id = "FEV1_range", anim = TRUE)
     }
