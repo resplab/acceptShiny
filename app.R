@@ -48,7 +48,11 @@ ui <- fluidPage(
     sidebarPanel(
       selectInput("male", labelMandatory("Gender"),list('','female', 'male'), selected = "female"),
       numericInput("age", labelMandatory("Age (year)"), value = 70, min = 20, max = 100, step = 1),
-      selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'yes'),
+      selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'yes') %>% 
+        helper(icon = "question-circle",
+               colour = "black",
+               type = "markdown",
+               content = "smoker"),
       numericInput('FEV1', labelMandatory('Post-bronchodilator FEV1 (% predicted)'), value = 40, min = 0, max = 100, step = 1),
       numericInput('SGRQ', labelMandatory('St. Georges Respiratory Questionnaire Score (SGRQ)'), value = 30, min = 1, max = 100, step = 1),
       numericInput("BMI", labelMandatory("Body mass index (BMI)"), value = 25, min = 5, max = 50, step = 0.1) %>% 
@@ -108,6 +112,12 @@ ui <- fluidPage(
       shinyjs::hidden(
         div(id = "exac_range",
             HTML(paste(tags$span(style="color:red", "Number of severe exacerbation cannot be larger than all exacerbations")))
+        )
+      ),
+      
+      shinyjs::hidden(
+        div(id = "exac_minimum",
+            HTML(paste(tags$span(style="color:red", "The model is only valid for patients with at least one exacerbation within the past 12 months")))
         )
       ),
       
@@ -218,6 +228,14 @@ server <- function(input, output, session) {
   })    
   
   observe({
+    if ((!is.na(input$LastYrSevExacCount) && (input$LastYrSevExacCount!="")  && (!is.na(input$LastYrExacCount)) && (!is.na(input$LastYrExacCount)))) {
+      if (input$LastYrExacCount < 1)  {
+        shinyjs::show (id = "exac_minimum", anim = TRUE)}
+      else shinyjs::hide (id = "exac_minimum", anim = TRUE)
+    }
+  })
+  
+  observe({
       if (!is.na(input$SGRQ) && (input$SGRQ!="")) {
         if ((input$SGRQ< 0)  || (input$SGRQ > 100))  {
           shinyjs::show (id = "SGRQ_range", anim = TRUE)}
@@ -252,7 +270,7 @@ server <- function(input, output, session) {
         is.na (input$LAMA) || input$LAMA == "" || is.na(input$LABA) || input$LABA == "" ||
         is.na (input$ICS) || input$ICS == "" || is.na(input$oxygen) || input$oxygen == "" ||is.na(input$smoker) || input$smoker == "" ||
         ((input$LastYrSevExacCount) > (input$LastYrExacCount)) || ((input$BMI < 5)  || (input$BMI > 50))  || 
-        ((input$age < 40)  || (input$age > 100)) || ((input$SGRQ< 0)  || (input$SGRQ > 100))
+        ((input$age < 40)  || (input$age > 100)) || ((input$SGRQ< 0)  || (input$SGRQ > 100)) || (input$LastYrExacCount < 1)
     )
         {
       shinyjs::disable("submit")
