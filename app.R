@@ -54,7 +54,16 @@ ui <- fluidPage(
                type = "markdown",
                content = "smoker"),
       numericInput('FEV1', labelMandatory('Post-bronchodilator FEV1 (% predicted)'), value = 40, min = 0, max = 100, step = 1),
-      numericInput('SGRQ', labelMandatory('St. Georges Respiratory Questionnaire Score (SGRQ)'), value = 30, min = 1, max = 100, step = 1),
+      numericInput('SGRQ', 'St. Georges Respiratory Questionnaire Score (SGRQ)', value = 30, min = 0, max = 100, step = 1) %>% 
+            helper(icon = "question-circle",
+                   colour = "black",
+                   type = "markdown",
+                   content = "SGRQ"),
+      numericInput('CAT', 'If SGRQ is not available, please enter COPD Assessment Test (CAT) Score', value =NA , min = 0, max = 40, step = 1) %>% 
+        helper(icon = "question-circle",
+               colour = "black",
+               type = "markdown",
+               content = "CAT"), 
       numericInput("BMI", labelMandatory("Body mass index (BMI)"), value = 25, min = 5, max = 50, step = 0.1) %>% 
         helper(icon = "question-circle",
                colour = "black",
@@ -102,6 +111,19 @@ ui <- fluidPage(
             HTML(paste(tags$span(style="color:red", "St. George's Respiratory Questionnaire Score (SGRQ) must be between 0 and 100")))
         )
       ),
+      
+      shinyjs::hidden(
+        div(id = "CAT_range",
+            HTML(paste(tags$span(style="color:red", "COPD Assessment Test (CAT) score must be between 0 and 40")))
+        )
+      ),
+      
+      shinyjs::hidden(
+        div(id = "CAT_SGRQ",
+            HTML(paste(tags$span(style="color:red", "Either SGRQ or CAT score must be entered.")))
+        )
+      ),
+      
       shinyjs::hidden(
         div(id = "age_range",
             HTML(paste(tags$span(style="color:red", "age must be between 20 and 100")))
@@ -248,7 +270,28 @@ server <- function(input, output, session) {
         }
       }
     })
+  
+  observe({
+    if (!is.na(input$CAT) && (input$CAT!="")) {
+      if ((input$CAT< 0)  || (input$CAT > 40))  {
+        shinyjs::show (id = "CAT_range", anim = TRUE)}
+      else {
+        shinyjs::hide (id = "CAT_range", anim = TRUE)
+      }
+    }
+  })
     
+  observe({
+    sympChecker <- as.numeric (is.na(input$SGRQ) + is.na(input$CAT))
+      if (sympChecker  == 0 || sympChecker == 2)  {
+        shinyjs::show (id = "CAT_SGRQ", anim = TRUE)}
+      else {
+        shinyjs::hide (id = "CAT_SGRQ", anim = TRUE)
+      }
+    
+    
+  })
+  
   observe({
     if (!is.na(input$age) && (input$age!="")) {
       if ((input$age < 40)  || (input$age > 100))  {
@@ -267,14 +310,17 @@ server <- function(input, output, session) {
   })  
   
   observe({
-    if (!input$termsCheck || is.na(input$FEV1) || (input$FEV1 == "") || is.na(input$SGRQ) || (input$SGRQ == "") || 
+    sympChecker <- as.numeric (is.na(input$SGRQ) + is.na(input$CAT))
+    print(sympChecker)
+    if (!input$termsCheck || is.na(input$FEV1) || (input$FEV1 == "")  || (sympChecker == 2) || (sympChecker == 0) || 
         is.na (input$age) || (input$age == "") || is.null (input$male) || (input$male == "") || 
         is.na (input$BMI) || input$BMI == "" || is.na(input$LastYrSevExacCount) || input$LastYrSevExacCount == "" ||
         is.na (input$statin) || input$statin == "" || is.na(input$LastYrExacCount) || input$LastYrExacCount == "" ||
         is.na (input$LAMA) || input$LAMA == "" || is.na(input$LABA) || input$LABA == "" ||
         is.na (input$ICS) || input$ICS == "" || is.na(input$oxygen) || input$oxygen == "" ||is.na(input$smoker) || input$smoker == "" ||
         ((input$LastYrSevExacCount) > (input$LastYrExacCount)) || ((input$BMI < 5)  || (input$BMI > 50))  || 
-        ((input$age < 40)  || (input$age > 100)) || ((input$SGRQ< 0)  || (input$SGRQ > 100)) || (input$LastYrExacCount < 1)
+        ((input$age < 40)  || (input$age > 100)) || (input$LastYrExacCount < 1) 
+        
     )
         {
       shinyjs::disable("submit")
@@ -387,7 +433,8 @@ server <- function(input, output, session) {
     patientData$ICS    <- input$ICS
     patientData$FEV1 <- input$FEV1
     patientData$BMI   <- input$BMI
-    patientData$SGRQ   <- input$SGRQ
+    if (!is.na(input$SGRQ)) {patientData$SGRQ   <- input$SGRQ}
+    if (is.na(input$SGRQ)) {patientData$SGRQ   <- 18.87 + 1.53*input$CAT} #based on https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4940016/
     patientData$LastYrSevExacCount <- input$LastYrSevExacCount
     patientData$LastYrExacCount <- input$LastYrExacCount
     
