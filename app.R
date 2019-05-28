@@ -51,7 +51,11 @@ ui <- fluidPage(
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'yes'),
       numericInput('FEV1', labelMandatory('Post-bronchodilator FEV1 (% predicted)'), value = 40, min = 0, max = 100, step = 1),
       numericInput('SGRQ', labelMandatory('St. Georges Respiratory Questionnaire Score (SGRQ)'), value = 30, min = 1, max = 100, step = 1),
-      numericInput("BMI", labelMandatory("Body mass index (BMI)"), value = 25, min = 5, max = 50, step = 0.1),
+      numericInput("BMI", labelMandatory("Body mass index (BMI)"), value = 25, min = 5, max = 50, step = 0.1) %>% 
+        helper(icon = "question-circle",
+               colour = "black",
+               type = "markdown",
+               content = "BMI"),
       selectInput("oxygen", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = "yes"),
       selectInput("statin", labelMandatory("Is the patient currently on statins?"),list('','yes', 'no'), selected = "no"),
       selectInput("LAMA", labelMandatory("Is the patient currently on LAMAs?"),list('','yes', 'no'), selected = "yes"),
