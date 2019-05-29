@@ -593,12 +593,18 @@ server <- function(input, output, session) {
       azithro_severe_risk_diff <- round((noAzithroResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 1)
       text <- paste0("Based on the MACRO trial, Azithromycin (250mg/day) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
                      azithro_severe_risk_diff , "% for severe exacerbations.")
-      if (round(noAzithroResults$predicted_severe_exac_probability, 2) >= 0.22) {
-        text_roflumilast <- "Based on the harm-benefit analysis by Yu et al., roflumilast (500 µg/day) will likely provide a NET BENEFIT to this patient."
-      }
-      else {
-        text_roflumilast <- "Based on the harm-benefit analysis by Yu et al., roflumilast (500 µg/day) will likely provide a NET HARM to this patient."
-      }
+      sevRisk <- noAzithroResults$predicted_severe_exac_probability*100
+      print (sevRisk)
+      if (sevRisk <= 15) {roflumilastBenefitProb <- 0}
+      else if (sevRisk <= 35) {roflumilastBenefitProb <- round(454.4914758494446 -92.11798616195082*sevRisk + 
+                                      6.363577462586879*(sevRisk^2) - 0.1734143958325213*(sevRisk^3) + 
+                                      0.001668176*(sevRisk^4),0)}
+      else {roflumilastBenefitProb = 95}
+      
+      text_roflumilast <- paste0("Based on the harm-benefit analysis by Yu et al., the probability of roflumilast (500 µg/day) being beneficial to this patient is approximately ",
+                                 roflumilastBenefitProb, "%.")
+
+
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
       HTML(paste(tags$strong(treatmentTitle), tags$strong(text), 
                  tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", target="_blank", "Reference: Albert RK, Connett J, Bailey WC, et al. Azithromycin for prevention of exacerbations of COPD. N Engl J Med 2011; 365: 689–98."), 
