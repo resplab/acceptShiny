@@ -591,20 +591,30 @@ server <- function(input, output, session) {
     output$text_risk <- renderUI({
       azithro_risk_diff <- round((noAzithroResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 1)
       azithro_severe_risk_diff <- round((noAzithroResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 1)
-      text <- paste0("Based on the MACRO trial, Azithromycin (250mg, daily) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
+      text <- paste0("Based on the MACRO trial, Azithromycin (250mg/day) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
                      azithro_severe_risk_diff , "% for severe exacerbations.")
+      if (round(noAzithroResults$predicted_severe_exac_probability, 2) >= 0.22) {
+        text_roflumilast <- "Based on the harm-benefit analysis by Yu et al., roflumilast (500 µg/day) will likely provide a NET BENEFIT to this patient."
+      }
+      else {
+        text_roflumilast <- "Based on the harm-benefit analysis by Yu et al., roflumilast (500 µg/day) will likely provide a NET HARM to this patient."
+      }
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
-      HTML(paste(tags$strong(treatmentTitle), tags$strong(text), sep = '<br/>'))
+      HTML(paste(tags$strong(treatmentTitle), tags$strong(text), 
+                 tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", "Reference: Albert RK, Connett J, Bailey WC, et al. Azithromycin for prevention of exacerbations of COPD. N Engl J Med 2011; 365: 689–98."), 
+                 tags$strong(text_roflumilast),
+                 tags$a(href="https://thorax.bmj.com/content/69/7/616", "Reference: Yu T, Fain K, Boyd CM, et al. Benefits and harms of roflumilast in moderate to severe COPD. Thorax 2014; 69: 616–22."), 
+                 sep = '<br/>'))
       })
         
     output$text_rate <- renderUI({
       #azithro_rate_diff <- rates["No Azithromycin", "predicted_exac_rate"] - rates["With Azithromycin", "predicted_exac_rate"] 
       azithro_rate_diff <- round(100 * (noAzithroResults$predicted_exac_rate - azithroResults$predicted_exac_rate), 0)
       azithro_severe_rate_diff <- round(100 * (noAzithroResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate), 0)
-      text <- paste0( "Based on the MACRO trial, for every 100 people treated with Azithromycin (250mg, daily) an average of ", azithro_rate_diff, " exacerbations, and ", 
+      text <- paste0("Based on the MACRO trial, for every 100 people treated with Azithromycin (250mg/day) an average of ", azithro_rate_diff, " exacerbations, and ", 
                       azithro_severe_rate_diff , " severe exacerbations will be prevented every year.")
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
-      HTML(paste(tags$strong(treatmentTitle), tags$strong(text),  sep = '<br/>'))
+      HTML(paste(tags$strong(treatmentTitle), tags$strong(text),  sep = '<br/>', tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", "Reference: Albert et al., Azithromycin for prevention of exacerbations of COPD, New England Journal of Medicine 365.8 (2011): 689-698")))
       
     })
     
@@ -666,7 +676,7 @@ server <- function(input, output, session) {
       text <- paste0("The heatmap shows the probablity of all possible numbers of exacerbation and severe exacerbations with 
                      the next year.")
       
-      plotTitle <- HTML(paste(tags$span("Interpreation Guide:")))
+      plotTitle <- HTML(paste(tags$span("interpretation Guide:")))
       HTML(paste(tags$strong(plotTitle), (text),  sep = '<br/>'))
     })
     
