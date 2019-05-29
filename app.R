@@ -311,7 +311,6 @@ server <- function(input, output, session) {
   
   observe({
     sympChecker <- as.numeric (is.na(input$SGRQ) + is.na(input$CAT))
-    print(sympChecker)
     if (!input$termsCheck || is.na(input$FEV1) || (input$FEV1 == "")  || (sympChecker == 2) || (sympChecker == 0) || 
         is.na (input$age) || (input$age == "") || is.null (input$male) || (input$male == "") || 
         is.na (input$BMI) || input$BMI == "" || is.na(input$LastYrSevExacCount) || input$LastYrSevExacCount == "" ||
@@ -456,7 +455,7 @@ server <- function(input, output, session) {
     
     progress$set(message = "running the model...", value = 0.25)
     
-    results <- predictACCEPT(patientData = patientData)
+    results <- predictACCEPT(patientData = patientData, random_sampling_N = 5000, random_distribution_iteration = 2e4)
     results <- results %>% select(-c(male, age, smoker, oxygen, statin, LAMA, LABA, ICS, FEV1, BMI, SGRQ, LastYrExacCount, 
                                      LastYrSevExacCount, randomized_azithromycin,	randomized_statin,	randomized_LAMA,	
                                      randomized_LABA,	randomized_ICS))
@@ -484,7 +483,7 @@ server <- function(input, output, session) {
                    geom_text(
                     aes(label = paste0(round (100*predicted_exac_probability, 1), "%"), y = 100*predicted_exac_probability),
                     nudge_x = -0.25, nudge_y = 2)  +                  
-                   theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="1 yr Probablity of Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
+                   theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="Risk of Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
                   theme(axis.title.x=element_blank(),
                         axis.text.x=element_blank(),
                         axis.ticks.x=element_blank()) 
@@ -506,7 +505,7 @@ server <- function(input, output, session) {
         geom_text(
           aes(label = paste0(round (100*predicted_severe_exac_probability, 1), "%"), y = 100*predicted_severe_exac_probability),
           nudge_x = -0.25, nudge_y = 2)  +
-        theme_tufte(base_family = tuftefont, base_size = 14 ) + labs (title="1 yr Probablity of Severe Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
+        theme_tufte(base_family = tuftefont, base_size = 14 ) + labs (title="Risk of Severe Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
         theme(axis.title.x=element_blank(),
               axis.text.x=element_blank(),
               axis.ticks.x=element_blank()) 
