@@ -594,16 +594,24 @@ server <- function(input, output, session) {
       text <- paste0("Based on the MACRO trial, Azithromycin (250mg/day) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
                      azithro_severe_risk_diff , "% for severe exacerbations.")
       sevRisk <- noAzithroResults$predicted_severe_exac_probability*100
-      print (sevRisk)
+      
+      # roflumilastBenefitProb is calculated based on digitization of the plot in Yu T, Fain K, Boyd CM, et al. Benefits and harms of roflumilast in moderate to severe COPD. Thorax 2014; 69: 616–22.
       if (sevRisk <= 15) {roflumilastBenefitProb <- 0}
-      else if (sevRisk <= 35) {roflumilastBenefitProb <- round(454.4914758494446 -92.11798616195082*sevRisk + 
+      else if (sevRisk <= 35) {
+        roflumilastBenefitProb <- round(454.4914758494446 -92.11798616195082*sevRisk + 
                                       6.363577462586879*(sevRisk^2) - 0.1734143958325213*(sevRisk^3) + 
-                                      0.001668176*(sevRisk^4),0)}
+                                      0.001668176*(sevRisk^4),0)
+        }
       else {roflumilastBenefitProb = 95}
       
-      text_roflumilast <- paste0("Based on the harm-benefit analysis by Yu et al., the probability of roflumilast (500 µg/day) being beneficial to this patient is approximately ",
-                                 roflumilastBenefitProb, "%.")
-
+      if (roflumilastBenefitProb == 0) {text_roflumilast <- paste0("Based on the harm-benefit analysis by Yu et al., the probability that roflumilast (500 µg/day) will provide a net benefit to this patient is almost zero.")}
+      else {
+        # reducing accuracy to account for digitization as well as small variations between genders
+        roflumilastBenefitProbFloor <- floor(roflumilastBenefitProb/10)*10
+        roflumilastBenefitProbCeiling <- ceiling(roflumilastBenefitProb/10)*10
+        text_roflumilast <- paste0("Based on the harm-benefit analysis by Yu et al., the probability that roflumilast (500 µg/day) will provide a net benefit to this patient is between ",
+                                   roflumilastBenefitProbFloor, "% to ", roflumilastBenefitProbCeiling, "%.")
+      }
 
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
       HTML(paste(tags$strong(treatmentTitle), tags$strong(text), 
