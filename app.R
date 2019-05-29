@@ -601,10 +601,12 @@ server <- function(input, output, session) {
       }
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
       HTML(paste(tags$strong(treatmentTitle), tags$strong(text), 
-                 tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", "Reference: Albert RK, Connett J, Bailey WC, et al. Azithromycin for prevention of exacerbations of COPD. N Engl J Med 2011; 365: 689–98."), 
+                 tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", target="_blank", "Reference: Albert RK, Connett J, Bailey WC, et al. Azithromycin for prevention of exacerbations of COPD. N Engl J Med 2011; 365: 689–98."), 
+                 tags$a(href="https://academic.oup.com/aje/article/184/9/681/2332840", target="_blank", "Reference: Sadatsafavi M, Sin DD, Zafari Z, et al. The Association Between Rate and Severity of Exacerbations in Chronic Obstructive Pulmonary Disease: An Application of a Joint Frailty-Logistic Model. Am J Epidemiol 2016; 184: 681–9."), 
                  tags$strong(text_roflumilast),
-                 tags$a(href="https://thorax.bmj.com/content/69/7/616", "Reference: Yu T, Fain K, Boyd CM, et al. Benefits and harms of roflumilast in moderate to severe COPD. Thorax 2014; 69: 616–22."), 
+                 tags$a(href="https://thorax.bmj.com/content/69/7/616", target="_blank", "Reference: Yu T, Fain K, Boyd CM, et al. Benefits and harms of roflumilast in moderate to severe COPD. Thorax 2014; 69: 616–22."), 
                  sep = '<br/>'))
+      
       })
         
     output$text_rate <- renderUI({
@@ -614,7 +616,10 @@ server <- function(input, output, session) {
       text <- paste0("Based on the MACRO trial, for every 100 people treated with Azithromycin (250mg/day) an average of ", azithro_rate_diff, " exacerbations, and ", 
                       azithro_severe_rate_diff , " severe exacerbations will be prevented every year.")
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
-      HTML(paste(tags$strong(treatmentTitle), tags$strong(text),  sep = '<br/>', tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", "Reference: Albert et al., Azithromycin for prevention of exacerbations of COPD, New England Journal of Medicine 365.8 (2011): 689-698")))
+      HTML(paste(tags$strong(treatmentTitle), tags$strong(text), 
+                 tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", target="_blank", "Reference: Albert et al., Azithromycin for prevention of exacerbations of COPD, New England Journal of Medicine 365.8 (2011): 689-698"),
+                 tags$a(href="https://academic.oup.com/aje/article/184/9/681/2332840", target="_blank", "Reference: Sadatsafavi M, Sin DD, Zafari Z, et al. The Association Between Rate and Severity of Exacerbations in Chronic Obstructive Pulmonary Disease: An Application of a Joint Frailty-Logistic Model. Am J Epidemiol 2016; 184: 681–9."),
+                 sep = '<br/>'))
       
     })
     
