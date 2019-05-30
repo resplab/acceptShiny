@@ -498,6 +498,10 @@ server <- function(input, output, session) {
       if (input$error_risk==2) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_exac_probability_lower_CI, ymax = 100*predicted_exac_probability_upper_CI), width = 0.1)
       }
+     
+      # plotProbSave <- plotProb + theme_tufte(base_size = 30) + 
+      #   theme(legend.position = "none", axis.line = element_line(color = 'black')) 
+      # ggsave("exacRisk.png", plot = plotProbSave, width = 10, height = 10, scale = 1, units = "in")
       plotProb
     })
     
@@ -523,10 +527,13 @@ server <- function(input, output, session) {
       if (input$error_risk==2) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = 100*predicted_severe_exac_probability_lower_CI, ymax = 100*predicted_severe_exac_probability_upper_CI), width = 0.1) 
       }
-      
+      # plotProbSave <- plotProb + theme_tufte(base_size = 30) + 
+      #   theme(legend.position = "none", axis.line = element_line(color = 'black')) 
+      # ggsave("exacSevRisk.png", plot = plotProbSave, width = 10, height = 10, scale = 1, units = "in")
       plotProb
     })   
-    
+        
+        
     output$exac_rate <- renderPlot({
       tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
       if (input$compareTreatmentRate == 0) {
@@ -550,6 +557,9 @@ server <- function(input, output, session) {
       if (input$error_rate==2) {
         plotProb <- plotProb + geom_errorbar(aes(ymin = predicted_exac_rate_lower_CI, ymax = predicted_exac_rate_upper_CI), width = 0.1) 
       }
+      # plotProbSave <- plotProb + theme_tufte(base_size = 30) + 
+      #   theme(legend.position = "none", axis.line = element_line(color = 'black')) 
+      # ggsave("exacRate.png", plot = plotProbSave, width = 10, height = 10, scale = 1, units = "in")
       plotProb
     })
     
@@ -578,6 +588,9 @@ server <- function(input, output, session) {
       if (input$error_rate==2) {
         plotProb <- plotProb +  geom_errorbar(aes(ymin = predicted_severe_exac_rate_lower_CI, ymax = predicted_severe_exac_rate_upper_CI), width = 0.1) 
       }
+      # plotProbSave <- plotProb + theme_tufte(base_size = 30) + 
+      #   theme(legend.position = "none", axis.line = element_line(color = 'black')) 
+      # ggsave("exacSevRate.png", plot = plotProbSave, width = 10, height = 10, scale = 1, units = "in")
       plotProb
     })
   
@@ -625,7 +638,7 @@ server <- function(input, output, session) {
         roflumilastBenefitProbFloor <- floor(roflumilastBenefitProb/10)*10
         roflumilastBenefitProbCeiling <- ceiling(roflumilastBenefitProb/10)*10
         text_roflumilast <- paste0("Based on the harm-benefit analysis by Yu et al., the probability that roflumilast (500 µg/day) will provide a net benefit to this patient is between ",
-                                   roflumilastBenefitProbFloor, "% to ", roflumilastBenefitProbCeiling, "%.")
+                                   roflumilastBenefitProbFloor, "% and ", roflumilastBenefitProbCeiling, "%, providing that patient has a chronic bronchitis phenotype.")
       }
 
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
@@ -642,8 +655,8 @@ server <- function(input, output, session) {
       #azithro_rate_diff <- rates["Baseline", "predicted_exac_rate"] - rates["With Azithromycin", "predicted_exac_rate"] 
       azithro_rate_diff <- round(100 * (baselineResults$predicted_exac_rate - azithroResults$predicted_exac_rate), 0)
       azithro_severe_rate_diff <- round(100 * (baselineResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate), 0)
-      text <- paste0("Based on the MACRO trial, for every 100 people treated with Azithromycin (250mg/day) an average of ", azithro_rate_diff, " exacerbations, and ", 
-                      azithro_severe_rate_diff , " severe exacerbations will be prevented every year.")
+      text <- paste0("Based on the MACRO trial, for every 100 people treated with Azithromycin (250mg/day) an average of ", azithro_rate_diff, " exacerbations will be prevented every year, of which ", 
+                      azithro_severe_rate_diff , " are severe exacerbations.")
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
       HTML(paste(tags$strong(treatmentTitle), tags$strong(text), 
                  tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", target="_blank", "Reference: Albert et al., Azithromycin for prevention of exacerbations of COPD, New England Journal of Medicine 365.8 (2011): 689-698"),
@@ -683,7 +696,7 @@ server <- function(input, output, session) {
           yaxis = list(title = "Number of Severe Exacerbations"),
           xaxis = list(title = "Number of All Exacerbations")
         ) %>% config(displaylogo=F, doubleClick=F,  displayModeBar=F, scrollZoom=F) %>% layout(xaxis=list(fixedrange=TRUE)) %>% layout(yaxis=list(fixedrange=TRUE)) 
-      
+ 
     })
     
     
