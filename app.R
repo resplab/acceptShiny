@@ -638,7 +638,7 @@ server <- function(input, output, session) {
         roflumilastBenefitProbFloor <- floor(roflumilastBenefitProb/10)*10
         roflumilastBenefitProbCeiling <- ceiling(roflumilastBenefitProb/10)*10
         text_roflumilast <- paste0("Based on the harm-benefit analysis by Yu et al., the probability that roflumilast (500 µg/day) will provide a net benefit to this patient is between ",
-                                   roflumilastBenefitProbFloor, "% and ", roflumilastBenefitProbCeiling, "%, providing that patient has a chronic bronchitis phenotype.")
+                                   roflumilastBenefitProbFloor, "% and ", roflumilastBenefitProbCeiling, "%, providing that the patient has a chronic bronchitis phenotype.")
       }
 
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
