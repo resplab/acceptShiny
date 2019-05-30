@@ -487,7 +487,7 @@ server <- function(input, output, session) {
                    geom_text(
                     aes(label = paste0(round (100*predicted_exac_probability, 1), "%"), y = 100*predicted_exac_probability),
                     nudge_x = -0.25, nudge_y = 2)  +                  
-                   theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="Risk of Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
+                   theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="All Exacerbations", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
                   theme(axis.title.x=element_blank(),
                         axis.text.x=element_blank(),
                         axis.ticks.x=element_blank()) 
@@ -511,7 +511,7 @@ server <- function(input, output, session) {
         geom_text(
           aes(label = paste0(round (100*predicted_severe_exac_probability, 1), "%"), y = 100*predicted_severe_exac_probability),
           nudge_x = -0.25, nudge_y = 2)  +
-        theme_tufte(base_family = tuftefont, base_size = 14 ) + labs (title="Risk of Severe Exacerbation", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
+        theme_tufte(base_family = tuftefont, base_size = 14 ) + labs (title="Severe Exacerbations", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
         theme(axis.title.x=element_blank(),
               axis.text.x=element_blank(),
               axis.ticks.x=element_blank()) 
@@ -538,7 +538,7 @@ server <- function(input, output, session) {
         geom_text(
           aes(label = round (predicted_exac_rate, 1), y = predicted_exac_rate),
           nudge_x = -0.3, nudge_y = 2*upperInterval/100)  + 
-        theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="Predicted Exacerbation Rate", x="", y="Exacerbations per year" ) +
+        theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="All Exacerbations", x="", y="Exacerbations per year" ) +
         theme(axis.title.x=element_blank(),
               axis.text.x=element_blank(),
               axis.ticks.x=element_blank()) 
@@ -565,7 +565,7 @@ server <- function(input, output, session) {
         geom_text(
           aes(label = round (predicted_severe_exac_rate, 1), y = predicted_severe_exac_rate),
           nudge_x = -0.3, nudge_y = 2*upperInterval/100)  +
-        theme_tufte(base_size = 14, base_family = tuftefont) + labs (title="Predicted Severe Exacerbation Rate", x="", y="Severe Exacerbations per year" ) +
+        theme_tufte(base_size = 14, base_family = tuftefont) + labs (title="Severe Exacerbations", x="", y="Severe Exacerbations per year" ) +
         theme(axis.title.x=element_blank(),
               axis.text.x=element_blank(),
               axis.ticks.x=element_blank()) 
