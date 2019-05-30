@@ -159,8 +159,10 @@ ui <- fluidPage(
                   tabPanel("Exacerbation Risk",
                            br(),
                            div(id = "background", includeMarkdown("./background.rmd")),
+                           shinyjs::hidden(radioButtons("compareTreatmentRisk", inline = T,  "Comparison Treatment:", choices = list ("None" = 0, "Azithromycin" = 1), selected = 0)),
                            shinyjs::hidden(radioButtons("error_risk", inline = T,  "Uncertainty:", choices = list ("Hide" = 0, "95% Prediction Interval - For Individual Patient" = 1, 
-                                                                                                                                      "95% Confidence Interval - For Population Mean" = 2), selected = 0)),
+                                                         "95% Confidence Interval - For Population Mean" = 2), selected = 0)),
+                           
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_risk"), plotOutput("severe_exac_risk")),
                            br(),
                            htmlOutput("text_risk"),
@@ -171,6 +173,7 @@ ui <- fluidPage(
                   
                   tabPanel("Exacerbation Rate",
                            br(),
+                           shinyjs::hidden(radioButtons("compareTreatmentRate", inline = T,  "Comparison Treatment:", choices = list ("None" = 0, "Azithromycin" = 1), selected = 0)),
                            shinyjs::hidden(radioButtons("error_rate", inline = T, "Uncertainty:", choices = list ("Hide" = 0, "95% Prediction Interval - For Individual Patient" = 1, 
                              "95% Confidence Interval - For Population Mean" = 2), selected = 0)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
@@ -401,7 +404,6 @@ server <- function(input, output, session) {
     # Create a Progress object
     progress <- shiny::Progress$new()
     on.exit(progress$close())
-    
     #disabling inputs
     shinyjs::disable("male")  
     shinyjs::disable("smoker")  
@@ -463,12 +465,12 @@ server <- function(input, output, session) {
     
    azithroResults <- results %>% select (ID, contains("azithro")) %>% mutate (Treatment = "With Azithromycin") %>%
                                  rename_all(list(~str_replace(., "azithromycin_", "")))
-   noAzithroResults <- results %>% select (-contains("azithro")) %>% mutate (Treatment = "No Azithromycin")
+   baselineResults <- results %>% select (-contains("azithro")) %>% mutate (Treatment = "Baseline")
    
    progress$set(message = "plotting...", value = 0.90)    
    shinyjs::hide("background")
    
-   plotData <- rbind(azithroResults, noAzithroResults)
+   plotData <- rbind(azithroResults, baselineResults)
    
     probabilities <- plotData %>% select (Treatment, contains("probability"))
     rates <- plotData %>% select (Treatment, contains("rate"))
@@ -477,7 +479,9 @@ server <- function(input, output, session) {
     
     output$exac_risk <- renderPlot({
       tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
-
+      if (input$compareTreatmentRisk == 0) {
+        probabilities <- filter(probabilities, Treatment == "Baseline")
+      } 
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
                    geom_col(aes(y=100*predicted_exac_probability, fill=Treatment), show.legend = T, width = 0.7) + 
                    geom_text(
@@ -499,7 +503,9 @@ server <- function(input, output, session) {
     
     output$severe_exac_risk <- renderPlot({
       tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
-      
+      if (input$compareTreatmentRisk == 0) {
+        probabilities <- filter(probabilities, Treatment == "Baseline")
+      } 
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
         geom_col(aes(y=100*predicted_severe_exac_probability, fill=Treatment), width = 0.7) + 
         geom_text(
@@ -523,6 +529,9 @@ server <- function(input, output, session) {
     
     output$exac_rate <- renderPlot({
       tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
+      if (input$compareTreatmentRate == 0) {
+        rates<- filter(rates, Treatment == "Baseline")
+      } 
       upperInterval <- max (rates$predicted_exac_rate_upper_PI)
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_exac_rate, fill=Treatment), show.legend = T,  width = 0.7) + ylim(0, upperInterval) +
@@ -547,6 +556,9 @@ server <- function(input, output, session) {
       
     output$severe_exac_rate <- renderPlot({
       tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
+      if (input$compareTreatmentRate == 0) {
+        rates<- filter(rates, Treatment == "Baseline")
+      } 
       upperInterval <- max (rates$predicted_severe_exac_rate_upper_PI)
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_severe_exac_rate, fill=Treatment),  width = 0.7) + ylim(0, upperInterval) +
@@ -568,6 +580,9 @@ server <- function(input, output, session) {
       }
       plotProb
     })
+  
+    shinyjs::show("compareTreatmentRisk")
+    shinyjs::show("compareTreatmentRate")
     
     shinyjs::show("error_risk")
     shinyjs::show("error_rate")
@@ -589,11 +604,11 @@ server <- function(input, output, session) {
     caption.placement = getOption("xtable.caption.placement", "top"))
 
     output$text_risk <- renderUI({
-      azithro_risk_diff <- round((noAzithroResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 1)
-      azithro_severe_risk_diff <- round((noAzithroResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 1)
+      azithro_risk_diff <- round((baselineResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 1)
+      azithro_severe_risk_diff <- round((baselineResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 1)
       text <- paste0("Based on the MACRO trial, Azithromycin (250mg/day) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
                      azithro_severe_risk_diff , "% for severe exacerbations.")
-      sevRisk <- noAzithroResults$predicted_severe_exac_probability*100
+      sevRisk <- baselineResults$predicted_severe_exac_probability*100
       
       # roflumilastBenefitProb is calculated based on digitization of the plot in Yu T, Fain K, Boyd CM, et al. Benefits and harms of roflumilast in moderate to severe COPD. Thorax 2014; 69: 616–22.
       if (sevRisk <= 15) {roflumilastBenefitProb <- 0}
@@ -624,9 +639,9 @@ server <- function(input, output, session) {
       })
         
     output$text_rate <- renderUI({
-      #azithro_rate_diff <- rates["No Azithromycin", "predicted_exac_rate"] - rates["With Azithromycin", "predicted_exac_rate"] 
-      azithro_rate_diff <- round(100 * (noAzithroResults$predicted_exac_rate - azithroResults$predicted_exac_rate), 0)
-      azithro_severe_rate_diff <- round(100 * (noAzithroResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate), 0)
+      #azithro_rate_diff <- rates["Baseline", "predicted_exac_rate"] - rates["With Azithromycin", "predicted_exac_rate"] 
+      azithro_rate_diff <- round(100 * (baselineResults$predicted_exac_rate - azithroResults$predicted_exac_rate), 0)
+      azithro_severe_rate_diff <- round(100 * (baselineResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate), 0)
       text <- paste0("Based on the MACRO trial, for every 100 people treated with Azithromycin (250mg/day) an average of ", azithro_rate_diff, " exacerbations, and ", 
                       azithro_severe_rate_diff , " severe exacerbations will be prevented every year.")
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
@@ -639,7 +654,7 @@ server <- function(input, output, session) {
     
     output$surfacePlot <- renderPlotly({
       
-      Probability <- predictCountProb(noAzithroResults, n=10, shortened = F) * 100
+      Probability <- predictCountProb(baselineResults, n=10, shortened = F) * 100
 
       plot_ly(z = ~Probability, width = 800, height = 800)  %>% add_surface()  %>%
         layout(
@@ -654,7 +669,7 @@ server <- function(input, output, session) {
     
     output$heatMap <- renderPlotly({
       
-      probs <- predictCountProb(noAzithroResults, n=10) * 100
+      probs <- predictCountProb(baselineResults, n=10) * 100
       probs <- round(probs, 1)
       heatPlotly <- t(probs)
 
