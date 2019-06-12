@@ -690,7 +690,11 @@ server <- function(input, output, session) {
       
       plot_ly(x = c("none", "one", "two", "3 or more"),
               y = c("none", "one", "two", "3 or more"),
-              z = heatPlotly, type = "heatmap", hoverinfo = 'text', colors = colorRamp(c("steelblue4", "tomato")))  %>%
+              z = heatPlotly, 
+              type = "heatmap", 
+              hoverinfo = 'text', 
+              colors = colorRamp(c("steelblue4", "tomato")))  %>%
+      colorbar(title="Percentage") %>%
         layout(
           title = "Likely Scenarios",
           yaxis = list(title = "Number of Severe Exacerbations"),
