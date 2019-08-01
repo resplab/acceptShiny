@@ -10,15 +10,17 @@ This web application uses a joint frailty-logistic predictive model based on the
 
 Please refer to the manuscript for more details on the structure of the model and the validation process.
 
+#### User Manual
+
+For more information about the model and how to access it, please refer to the [ACCEPT user manual](https://resplab.github.io/acceptManual/section-introduction.html). 
+
 #### Citation
 
-Please cite this paper when using the results of this web application:
-
-```Adibi, Amin et al. Development and External Validation of the Acute COPD Exacerbation Prediction Tool (ACCEPT). Under review```
+The manuscript is currently under review. A preprint is available on [biorxiv](https://doi.org/10.1101/651901)
 
 #### Bug Report
 
-Please report bugs and issues [here] (https://github.com/aminadibi/acceptShiny/issues).
+Please report bugs and issues [here] (https://github.com/resplab/acceptShiny/issues).
 
                          
 #### Credits
