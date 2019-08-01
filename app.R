@@ -143,7 +143,7 @@ ui <- fluidPage(
       
       shinyjs::hidden(
         div(id = "exac_minimum",
-            HTML(paste(tags$span(style="color:red", "The model is only valid for patients with at least one exacerbation within the past 12 months")))
+            HTML(paste(tags$span(style="color:red", "WARNING: The model might overestimate exacerbation rate for patients with zero exacerbations within the past 12 months. Please refer to the publication for more details.")))
         )
       ),
       
@@ -189,11 +189,11 @@ ui <- fluidPage(
                            br(),
                            plotlyOutput("heatMap")),
                   
-                  tabPanel("Probability Distribution",  
-                           br(),
-                           htmlOutput("text_surface"),
-                           br(),
-                           plotlyOutput("surfacePlot")),
+                  #tabPanel("Probability Distribution",  
+                   #        br(),
+                    #       htmlOutput("text_surface"),
+                     #      br(),
+                      #     plotlyOutput("surfacePlot")),
 
                   
                   tabPanel("Terms",  includeMarkdown("./disclaimer.rmd")),
@@ -321,7 +321,7 @@ server <- function(input, output, session) {
         is.na (input$LAMA) || input$LAMA == "" || is.na(input$LABA) || input$LABA == "" ||
         is.na (input$ICS) || input$ICS == "" || is.na(input$oxygen) || input$oxygen == "" ||is.na(input$smoker) || input$smoker == "" ||
         ((input$LastYrSevExacCount) > (input$LastYrExacCount)) || ((input$BMI < 5)  || (input$BMI > 50))  || 
-        ((input$age < 40)  || (input$age > 100)) || (input$LastYrExacCount < 1) 
+        ((input$age < 40)  || (input$age > 100)) || (input$LastYrExacCount < 0) 
         
     )
         {
@@ -411,6 +411,7 @@ server <- function(input, output, session) {
     shinyjs::disable("LastYrSevExacCount")  
     shinyjs::disable("FEV1") 
     shinyjs::disable("SGRQ") 
+    shinyjs::disable("CAT")
     shinyjs::disable("age") 
     shinyjs::disable("BMI")
     shinyjs::disable("oxygen")
