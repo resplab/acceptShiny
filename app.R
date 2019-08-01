@@ -46,40 +46,40 @@ ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
-      selectInput("male", labelMandatory("Gender"),list('','female', 'male'), selected = "female"),
-      numericInput("age", labelMandatory("Age (year)"), value = 70, min = 20, max = 100, step = 1),
-      selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'yes') %>% 
+      selectInput("male", labelMandatory("Gender"),list('','female', 'male'), selected = "male"),
+      numericInput("age", labelMandatory("Age (year)"), value = 57, min = 20, max = 100, step = 1),
+      selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no'), selected = 'no') %>% 
         helper(icon = "question-circle",
                colour = "black",
                type = "markdown",
                content = "smoker"),
-      numericInput('FEV1', labelMandatory('Post-bronchodilator FEV1 (% predicted)'), value = 40, min = 0, max = 100, step = 1),
-      numericInput('SGRQ', 'St. Georges Respiratory Questionnaire Score (SGRQ)', value = 30, min = 0, max = 100, step = 1) %>% 
+      numericInput('FEV1', labelMandatory('Post-bronchodilator FEV1 (% predicted)'), value = 51, min = 0, max = 100, step = 1),
+      numericInput('SGRQ', 'St. Georges Respiratory Questionnaire Score (SGRQ)', value = NA, min = 0, max = 100, step = 1) %>% 
             helper(icon = "question-circle",
                    colour = "black",
                    type = "markdown",
                    content = "SGRQ"),
-      numericInput('CAT', 'If SGRQ is not available, please enter COPD Assessment Test (CAT) Score', value =NA , min = 0, max = 40, step = 1) %>% 
+      numericInput('CAT', 'If SGRQ is not available, please enter COPD Assessment Test (CAT) Score', value = 29 , min = 0, max = 40, step = 1) %>% 
         helper(icon = "question-circle",
                colour = "black",
                type = "markdown",
                content = "CAT"), 
-      numericInput("BMI", labelMandatory("Body mass index (BMI)"), value = 25, min = 5, max = 50, step = 0.1) %>% 
+      numericInput("BMI", labelMandatory("Body mass index (BMI)"), value = 18, min = 5, max = 50, step = 0.1) %>% 
         helper(icon = "question-circle",
                colour = "black",
                type = "markdown",
                content = "BMI"),
-      selectInput("oxygen", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = "yes"),
+      selectInput("oxygen", labelMandatory("Has the patient received oxygen therapy within the last year?"),list('','yes', 'no'), selected = "no"),
       selectInput("statin", labelMandatory("Is the patient currently on statins?"),list('','yes', 'no'), selected = "no"),
       selectInput("LAMA", labelMandatory("Is the patient currently on LAMAs?"),list('','yes', 'no'), selected = "yes"),
       selectInput("LABA", labelMandatory("Is the patient currently on LABAs?"),list('','yes', 'no'), selected = "yes"),
-      selectInput("ICS", labelMandatory("Is the patient currently on inhaled corticosteroids?"),list('','yes', 'no'), selected = "no"),
-      numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 4, min = 0, max = 20,  step = 1) %>% 
+      selectInput("ICS", labelMandatory("Is the patient currently on inhaled corticosteroids?"),list('','yes', 'no'), selected = "yes"),
+      numericInput("LastYrExacCount", labelMandatory("Number of All Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1) %>% 
         helper(icon = "question-circle",
                colour = "black",
                type = "markdown",
                content = "LastYrExacCount"),
-      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 2, min = 0, max = 20,  step = 1) %>% 
+      numericInput("LastYrSevExacCount", labelMandatory("Number of Severe Exacerbations within the last 12 months"), value = 1, min = 0, max = 20,  step = 1) %>% 
         helper(icon = "question-circle",
                colour = "black",
                type = "markdown",
