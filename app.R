@@ -633,13 +633,13 @@ server <- function(input, output, session) {
         }
       else {roflumilastBenefitProb = 95}
       
-      if (roflumilastBenefitProb == 0) {text_roflumilast <- paste0("Roflumilast is NOT RECOMMENDED for this patients. The probability that roflumilast (500 µg/day) will provide a net benefit to this patient is almost zero. Based on the harm-benefit analysis by Yu et al., roflumilast is likely to provide a net benefit to patients with >22% one year chance of severe exacerbation.")}
+      if (roflumilastBenefitProb == 0) {text_roflumilast <- paste0("Roflumilast is NOT RECOMMENDED for this patients. The probability that roflumilast (500 µg/day) will provide a net benefit to this patient is almost zero. Based on the harm-benefit analysis by Yu et al., roflumilast is likely to provide a net benefit if the baseline risk of having at least one severe exacerbation per year exceeds 22%.")}
       else {
         # reducing accuracy to account for digitization as well as small variations between genders
         roflumilastBenefitProbFloor <- floor(roflumilastBenefitProb/10)*10
         roflumilastBenefitProbCeiling <- ceiling(roflumilastBenefitProb/10)*10
         text_roflumilast <- paste0("The probability that roflumilast (500 µg/day) will provide a net benefit to this patient is between ",
-                                   roflumilastBenefitProbFloor, "% and ", roflumilastBenefitProbCeiling, "%, providing that the patient has a chronic bronchitis phenotype. Based on the harm-benefit analysis by Yu et al., roflumilast is likely to provide a net benefit to patients with >22% one year chance of severe exacerbation.")
+                                   roflumilastBenefitProbFloor, "% and ", roflumilastBenefitProbCeiling, "%, providing that the patient has a chronic bronchitis phenotype. Based on the harm-benefit analysis by Yu et al., roflumilast is likely to provide a net benefit if the baseline risk of having at least one severe exacerbation per year exceeds 22%.")
       }
 
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
