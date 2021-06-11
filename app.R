@@ -46,6 +46,7 @@ ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
+      selectInput("model", labelMandatory("Model"),list('','accept (Adibi et al, 2020)', 'accept 2.0 (Safari et al, 2021)')),
       selectInput("male", labelMandatory("Gender"),list('','female', 'male')),
       numericInput("age", labelMandatory("Age (year)"), value = NA, min = 20, max = 100, step = 1),
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no')) %>% 
@@ -160,8 +161,8 @@ ui <- fluidPage(
                            br(),
                            div(id = "background", includeMarkdown("./background.rmd")),
                            shinyjs::hidden(radioButtons("compareTreatmentRisk", inline = T,  "Comparison Treatment:", choices = list ("None" = 0, "Azithromycin" = 1), selected = 0)),
-                           shinyjs::hidden(radioButtons("error_risk", inline = T,  "Uncertainty:", choices = list ("Hide" = 0, "95% Prediction Interval - For Individual Patient" = 1, 
-                                                         "95% Confidence Interval - For Population Mean" = 2), selected = 0)),
+                           shinyjs::hidden(radioButtons("error_risk", inline = T,  "Uncertainty:", choices = list ("Hide" = 0, "95% Prediction Interval - For Individual Patient" = 1 
+                                                        ), selected = 0)),
                            
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_risk"), plotOutput("severe_exac_risk")),
                            br(),
@@ -174,8 +175,8 @@ ui <- fluidPage(
                   tabPanel("Exacerbation Rate",
                            br(),
                            shinyjs::hidden(radioButtons("compareTreatmentRate", inline = T,  "Comparison Treatment:", choices = list ("None" = 0, "Azithromycin" = 1), selected = 0)),
-                           shinyjs::hidden(radioButtons("error_rate", inline = T, "Uncertainty:", choices = list ("Hide" = 0, "95% Prediction Interval - For Individual Patient" = 1, 
-                             "95% Confidence Interval - For Population Mean" = 2), selected = 0)),
+                           shinyjs::hidden(radioButtons("error_rate", inline = T, "Uncertainty:", choices = list ("Hide" = 0, "95% Prediction Interval - For Individual Patient" = 1 
+                             ), selected = 0)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
                            br(),
                            htmlOutput("text_rate"),
@@ -419,7 +420,7 @@ server <- function(input, output, session) {
     shinyjs::disable("LAMA")
     shinyjs::disable("LABA")
     shinyjs::disable("ICS")
-    shinyjs::disable("submit") 
+    #shinyjs::disable("submit") 
 
     progress$set(message = "Collecting the data...", value = 0.10)
     
@@ -458,7 +459,9 @@ server <- function(input, output, session) {
     
     progress$set(message = "running the model...", value = 0.25)
     
-    results <- predictACCEPT(patientData = patientData, random_sampling_N = 5000, random_distribution_iteration = 2e4)
+    if (input$model == "accept (Adibi et al, 2020)") {results <- accept(patientData = patientData)}
+    if (input$model == "accept 2.0 (Safari et al, 2021)") {results <- accept2(patientData = patientData)}
+    
     results <- results %>% select(-c(male, age, smoker, oxygen, statin, LAMA, LABA, ICS, FEV1, BMI, SGRQ, LastYrExacCount, 
                                      LastYrSevExacCount, randomized_azithromycin,	randomized_statin,	randomized_LAMA,	
                                      randomized_LABA,	randomized_ICS))
