@@ -16,7 +16,7 @@ For more information about the model and how to access it, please refer to the [
 
 #### Citation
 
-The manuscript is currently under review. A preprint is available on [biorxiv](https://doi.org/10.1101/651901)
+Adibi A, Sin DD, Safari A, Johnson KM, Aaron SD, FitzGerald JM, Sadatsafavi M. The Acute COPD Exacerbation Prediction Tool (ACCEPT): a modelling study. The Lancet Respiratory Medicine. 2020 Oct 1;8(10):1013-21. doi:[10.1016/S2213-2600(19)30397-2](https://doi.org/10.1016/S2213-2600%2819%2930397-2)
 
 #### Bug Report
 
