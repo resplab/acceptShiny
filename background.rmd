@@ -10,6 +10,6 @@ Inputs marked with <span style="color:red">&#42;</span> are required.
 <span style="color:Tomato">Warning: This tool SHOULD NOT BE USED to replace a diagnostic or treatment decision made by a physician. None of the predictors on the left panel have a causal interpretation in the model. Changing them for a single patient to estimate the effect of an intervention would be misleading and should be avoided.  </span>
 <br>
 
-For a detailed discription of the model, please refer to the [publication](https://doi.org/10.1101/651901). 
+For a detailed description of the model, please refer to the [publication](https://doi.org/10.1016/S2213-2600%2819%2930397-2). 
 
 ACCEPT is also available as an Excel spreadsheet, R package, and API. Please refer to project [homepage](http://resp.core.ubc.ca/research/Specific_Projects/accept) for more information. 

@@ -46,7 +46,7 @@ ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
-      selectInput("model", labelMandatory("Model"),list('','accept (Adibi et al, 2020)', 'accept 2.0 (Safari et al, 2021)')),
+      selectInput("model", labelMandatory("Model"),list('accept 2.0 (Safari et al, 2021)', 'accept (Adibi et al, 2020)'), selected = 'accept 2.0 (Safari et al, 2021)'),
       selectInput("male", labelMandatory("Gender"),list('','female', 'male')),
       numericInput("age", labelMandatory("Age (year)"), value = NA, min = 20, max = 100, step = 1),
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no')) %>% 
