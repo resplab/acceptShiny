@@ -46,7 +46,7 @@ ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
-      selectInput("model", labelMandatory("Model"),list('accept 2.0 (Safari et al, 2021)', 'accept (Adibi et al, 2020)'), selected = 'accept 2.0 (Safari et al, 2021)'),
+      selectInput("model", labelMandatory("Model"),list('ACCEPT 2.0 (Safari et al, 2021)', 'ACCEPT (Adibi et al, 2020)'), selected = 'accept 2.0 (Safari et al, 2021)'),
       selectInput("male", labelMandatory("Gender"),list('','female', 'male')),
       numericInput("age", labelMandatory("Age (year)"), value = NA, min = 20, max = 100, step = 1),
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no')) %>% 
@@ -144,7 +144,7 @@ ui <- fluidPage(
       
       shinyjs::hidden(
         div(id = "exac_minimum",
-            HTML(paste(tags$span(style="color:red", "WARNING: The model might overestimate exacerbation rate for patients with zero exacerbations within the past 12 months. Please refer to the publication for more details.")))
+            HTML(paste(tags$span(style="color:red", "WARNING: ACCEPT might overestimate exacerbation rate for patients with zero exacerbations within the past 12 months. Please consider using ACCEPT 2.0 patients without an exacerbation history. Please refer to the publication for more details.")))
         )
       ),
       
@@ -259,7 +259,7 @@ server <- function(input, output, session) {
   
   observe({
     if ((!is.na(input$LastYrSevExacCount) && (input$LastYrSevExacCount!="")  && (!is.na(input$LastYrExacCount)) && (!is.na(input$LastYrExacCount)))) {
-      if (input$LastYrExacCount < 1)  {
+      if (input$LastYrExacCount < 1 && input$model == "ACCEPT (Adibi et al, 2020)")  {
         shinyjs::show (id = "exac_minimum", anim = TRUE)}
       else shinyjs::hide (id = "exac_minimum", anim = TRUE)
     }
@@ -459,8 +459,8 @@ server <- function(input, output, session) {
     
     progress$set(message = "running the model...", value = 0.25)
     
-    if (input$model == "accept (Adibi et al, 2020)") {results <- accept(patientData = patientData)}
-    if (input$model == "accept 2.0 (Safari et al, 2021)") {results <- accept2(patientData = patientData)}
+    if (input$model == "ACCEPT (Adibi et al, 2020)") {results <- accept(patientData = patientData)}
+    if (input$model == "ACCEPT 2.0 (Safari et al, 2021)") {results <- accept2(patientData = patientData)}
     
     results <- results %>% select(-c(male, age, smoker, oxygen, statin, LAMA, LABA, ICS, FEV1, BMI, SGRQ, LastYrExacCount, 
                                      LastYrSevExacCount, randomized_azithromycin,	randomized_statin,	randomized_LAMA,	
@@ -489,7 +489,7 @@ server <- function(input, output, session) {
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
                    geom_col(aes(y=100*predicted_exac_probability, fill=Treatment), show.legend = T, width = 0.7) + 
                    geom_text(
-                    aes(label = paste0(round (100*predicted_exac_probability, 1), "%"), y = 100*predicted_exac_probability),
+                    aes(label = paste0(ifelse(round (100*predicted_exac_probability, 1)<5, "<5", round (100*predicted_exac_probability, 1)), "%"), y = 100*predicted_exac_probability),
                     nudge_x = -0.25, nudge_y = 2)  +                  
                    theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="All Exacerbations", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
                   theme(axis.title.x=element_blank(),
@@ -517,7 +517,7 @@ server <- function(input, output, session) {
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
         geom_col(aes(y=100*predicted_severe_exac_probability, fill=Treatment), width = 0.7) + 
         geom_text(
-          aes(label = paste0(round (100*predicted_severe_exac_probability, 1), "%"), y = 100*predicted_severe_exac_probability),
+          aes(label = paste0(ifelse(round (100*predicted_severe_exac_probability, 1) < 5, "<5", round (100*predicted_severe_exac_probability, 1)), "%"), y = 100*predicted_severe_exac_probability),
           nudge_x = -0.25, nudge_y = 2)  +
         theme_tufte(base_family = tuftefont, base_size = 14 ) + labs (title="Severe Exacerbations", x="", y="Probability (%)" ) + ylim(c(0, 100)) +
         theme(axis.title.x=element_blank(),
@@ -547,7 +547,7 @@ server <- function(input, output, session) {
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_exac_rate, fill=Treatment), show.legend = T,  width = 0.7) + ylim(0, upperInterval) +
         geom_text(
-          aes(label = round (predicted_exac_rate, 1), y = predicted_exac_rate),
+          aes(label = round (predicted_exac_rate, 2), y = predicted_exac_rate),
           nudge_x = -0.3, nudge_y = 2*upperInterval/100)  + 
         theme_tufte(base_family = tuftefont, base_size = 14) + labs (title="All Exacerbations", x="", y="Exacerbations per year" ) +
         theme(axis.title.x=element_blank(),
@@ -577,7 +577,7 @@ server <- function(input, output, session) {
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_severe_exac_rate, fill=Treatment),  width = 0.7) + ylim(0, upperInterval) +
         geom_text(
-          aes(label = round (predicted_severe_exac_rate, 1), y = predicted_severe_exac_rate),
+          aes(label = round (predicted_severe_exac_rate, 2), y = predicted_severe_exac_rate),
           nudge_x = -0.3, nudge_y = 2*upperInterval/100)  +
         theme_tufte(base_size = 14, base_family = tuftefont) + labs (title="Severe Exacerbations", x="", y="Severe Exacerbations per year" ) +
         theme(axis.title.x=element_blank(),
