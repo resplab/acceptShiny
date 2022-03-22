@@ -26,7 +26,7 @@ labelMandatory <- function(label) {
 appCSS <-
   ".mandatory_star { color: red; }"
 
-jsResetCode <- "shinyjs.reset = function() {history.go(0)}" # Define the js method that resets the page
+# jsResetCode <- "shinyjs.reset = function() {history.go(0)}" # Define the js method that resets the page
 
 
 
@@ -35,7 +35,7 @@ button_width <- 160
 # FEV1_lmer_function_output_summary <- NULL
 ui <- fluidPage(
   shinyjs::useShinyjs(),
-  shinyjs::extendShinyjs(text = jsResetCode, functions = c("reset")),                      # Add the js code to the page
+  # shinyjs::extendShinyjs(text = jsResetCode, functions = "reset"),                      # Add the js code to the page
   shinyjs::inlineCSS(appCSS),
   theme = shinytheme("united"),
   tags$head(tags$script(src = "message-handler.js")),
@@ -382,7 +382,8 @@ server <- function(input, output, session) {
   
   #'Clear Inputs' button - set all inputs to NULL
   observeEvent(input$reset_button, {
-    shinyjs::js$reset()
+    #shinyjs::js$reset()
+    session$reload()
   })
   
   
