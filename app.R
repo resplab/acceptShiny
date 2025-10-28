@@ -46,7 +46,7 @@ ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
-      selectInput("model", labelMandatory("Model"),list('ACCEPT 2.0 (Safari et al, 2021)', 'ACCEPT (Adibi et al, 2020)'), selected = 'accept 2.0 (Safari et al, 2021)'),
+      selectInput("model", labelMandatory("Model"),list('ACCEPT 3.0 (Lim et al, 2025)','ACCEPT 2.0 (Safari et al, 2021)', 'ACCEPT (Adibi et al, 2020)'), selected = 'accept 2.0 (Safari et al, 2021)'),
       selectInput("male", labelMandatory("Gender"),list('','female', 'male')),
       numericInput("age", labelMandatory("Age (year)"), value = NA, min = 20, max = 100, step = 1),
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no')) %>% 
@@ -174,12 +174,12 @@ ui <- fluidPage(
                   
                   tabPanel("Exacerbation Rate",
                            br(),
-                           shinyjs::hidden(radioButtons("compareTreatmentRate", inline = T,  "Comparison Treatment:", choices = list ("None" = 0, "Azithromycin" = 1), selected = 0)),
+                           #shinyjs::hidden(radioButtons("compareTreatmentRate", inline = T,  "Comparison Treatment:", choices = list ("None" = 0, "Azithromycin" = 1), selected = 0)),
                            shinyjs::hidden(radioButtons("error_rate", inline = T, "Uncertainty:", choices = list ("Hide" = 0, "95% Prediction Interval - For Individual Patient" = 1 
                              ), selected = 0)),
                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("exac_rate"), plotOutput("severe_exac_rate")),
-                           br(),
-                           htmlOutput("text_rate"),
+                          # br(),
+                          # htmlOutput("text_rate"),
                            br()
                            #tableOutput("table_exac_rate")
                            
@@ -462,24 +462,33 @@ server <- function(input, output, session) {
     
     if (input$model == "ACCEPT (Adibi et al, 2020)") {results <- accept(patientData = patientData)}
     if (input$model == "ACCEPT 2.0 (Safari et al, 2021)") {results <- accept2(patientData = patientData)}
+    if (input$model == "ACCEPT 3.0 (Lim et al, 2025)") {results <- accept(newdata = patientData, version = "accept3", country = "CAN")}
     
-    results <- results %>% select(-c(male, age, smoker, oxygen, statin, LAMA, LABA, ICS, FEV1, BMI, SGRQ, LastYrExacCount, 
+    progress$set(message = "plotting...", value = 0.90)    
+    shinyjs::hide("background")
+    
+    if (input$model == "ACCEPT 3.0 (Lim et al, 2025)") { 
+      baselineResults  <- results %>% mutate (Treatment = "Baseline")
+      probabilities    <- baselineResults %>% select (Treatment, contains("probability"))
+      rates            <- baselineResults %>% select (Treatment, contains("rate"))
+      
+    } else {
+   results <- results %>% select(-c(male, age, smoker, oxygen, statin, LAMA, LABA, ICS, FEV1, BMI, SGRQ, LastYrExacCount, 
                                      LastYrSevExacCount, randomized_azithromycin,	randomized_statin,	randomized_LAMA,	
                                      randomized_LABA,	randomized_ICS))
     
     
-   azithroResults <- results %>% select (ID, contains("azithro")) %>% mutate (Treatment = "With Azithromycin") %>%
-                                 rename_all(list(~str_replace(., "azithromycin_", "")))
+  # azithroResults <- results %>% select (ID, contains("azithro")) %>% mutate (Treatment = "With Azithromycin") %>%
+  #                               rename_all(list(~str_replace(., "azithromycin_", "")))
    baselineResults <- results %>% select (-contains("azithro")) %>% mutate (Treatment = "Baseline")
    
-   progress$set(message = "plotting...", value = 0.90)    
-   shinyjs::hide("background")
+
    
-   plotData <- rbind(azithroResults, baselineResults)
+   plotData <- rbind(baselineResults)
    
     probabilities <- plotData %>% select (Treatment, contains("probability"))
     rates <- plotData %>% select (Treatment, contains("rate"))
-    
+    }
 
     
     output$exac_risk <- renderPlot({
@@ -541,9 +550,9 @@ server <- function(input, output, session) {
         
     output$exac_rate <- renderPlot({
       tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
-      if (input$compareTreatmentRate == 0) {
+     # if (input$compareTreatmentRate == 0) {
         rates<- filter(rates, Treatment == "Baseline")
-      } 
+      #} 
       upperInterval <- max (rates$predicted_exac_rate_upper_PI)
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_exac_rate, fill=Treatment), show.legend = T,  width = 0.7) + ylim(0, upperInterval) +
@@ -571,9 +580,9 @@ server <- function(input, output, session) {
       
     output$severe_exac_rate <- renderPlot({
       tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
-      if (input$compareTreatmentRate == 0) {
+      #if (input$compareTreatmentRate == 0) {
         rates<- filter(rates, Treatment == "Baseline")
-      } 
+      #} 
       upperInterval <- max (rates$predicted_severe_exac_rate_upper_PI)
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_severe_exac_rate, fill=Treatment),  width = 0.7) + ylim(0, upperInterval) +
@@ -599,8 +608,8 @@ server <- function(input, output, session) {
       plotProb
     })
   
-    shinyjs::show("compareTreatmentRisk")
-    shinyjs::show("compareTreatmentRate")
+    #shinyjs::show("compareTreatmentRisk")
+    #shinyjs::show("compareTreatmentRate")
     
     shinyjs::show("error_risk")
     shinyjs::show("error_rate")
@@ -622,10 +631,11 @@ server <- function(input, output, session) {
     caption.placement = getOption("xtable.caption.placement", "top"))
 
     output$text_risk <- renderUI({
-      azithro_risk_diff <- round((baselineResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 1)
-      azithro_severe_risk_diff <- round((baselineResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 1)
-      text <- paste0("Based on the MACRO trial, Azithromycin (250mg/day) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
-                     azithro_severe_risk_diff , "% for severe exacerbations.")
+      text <- ""
+      #azithro_risk_diff <- round((baselineResults$predicted_exac_probability - azithroResults$predicted_exac_probability)*100, 1)
+      #azithro_severe_risk_diff <- round((baselineResults$predicted_severe_exac_probability - azithroResults$predicted_severe_exac_probability)*100, 1)
+      #text <- paste0("Based on the MACRO trial, Azithromycin (250mg/day) will reduce the absolute exacerbation risk by ", azithro_risk_diff, "% for all exacerbations, and ", 
+      #               azithro_severe_risk_diff , "% for severe exacerbations.")
       sevRisk <- baselineResults$predicted_severe_exac_probability*100
       
       # roflumilastBenefitProb is calculated based on digitization of the plot in Yu T, Fain K, Boyd CM, et al. Benefits and harms of roflumilast in moderate to severe COPD. Thorax 2014; 69: 616–22.
@@ -648,27 +658,27 @@ server <- function(input, output, session) {
 
       treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
       HTML(paste(tags$strong(treatmentTitle), tags$strong(text), 
-                 tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", target="_blank", "Reference: Albert RK, Connett J, Bailey WC, et al. Azithromycin for prevention of exacerbations of COPD. N Engl J Med 2011; 365: 689–98."), 
-                 tags$a(href="https://academic.oup.com/aje/article/184/9/681/2332840", target="_blank", "Reference: Sadatsafavi M, Sin DD, Zafari Z, et al. The Association Between Rate and Severity of Exacerbations in Chronic Obstructive Pulmonary Disease: An Application of a Joint Frailty-Logistic Model. Am J Epidemiol 2016; 184: 681–9."), 
+                # tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", target="_blank", "Reference: Albert RK, Connett J, Bailey WC, et al. Azithromycin for prevention of exacerbations of COPD. N Engl J Med 2011; 365: 689–98."), 
+                # tags$a(href="https://academic.oup.com/aje/article/184/9/681/2332840", target="_blank", "Reference: Sadatsafavi M, Sin DD, Zafari Z, et al. The Association Between Rate and Severity of Exacerbations in Chronic Obstructive Pulmonary Disease: An Application of a Joint Frailty-Logistic Model. Am J Epidemiol 2016; 184: 681–9."), 
                  tags$strong(text_roflumilast),
                  tags$a(href="https://thorax.bmj.com/content/69/7/616", target="_blank", "Reference: Yu T, Fain K, Boyd CM, et al. Benefits and harms of roflumilast in moderate to severe COPD. Thorax 2014; 69: 616–22."), 
                  sep = '<br/>'))
       
       })
         
-    output$text_rate <- renderUI({
+  #  output$text_rate <- renderUI({
       #azithro_rate_diff <- rates["Baseline", "predicted_exac_rate"] - rates["With Azithromycin", "predicted_exac_rate"] 
-      azithro_rate_diff <- round(100 * (baselineResults$predicted_exac_rate - azithroResults$predicted_exac_rate), 0)
-      azithro_severe_rate_diff <- round(100 * (baselineResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate), 0)
-      text <- paste0("Based on the MACRO trial, for every 100 people treated with Azithromycin (250mg/day) an average of ", azithro_rate_diff, " exacerbations will be prevented every year, of which ", 
-                      azithro_severe_rate_diff , " are severe exacerbations.")
-      treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
-      HTML(paste(tags$strong(treatmentTitle), tags$strong(text), 
-                 tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", target="_blank", "Reference: Albert et al., Azithromycin for prevention of exacerbations of COPD, New England Journal of Medicine 365.8 (2011): 689-698"),
-                 tags$a(href="https://academic.oup.com/aje/article/184/9/681/2332840", target="_blank", "Reference: Sadatsafavi M, Sin DD, Zafari Z, et al. The Association Between Rate and Severity of Exacerbations in Chronic Obstructive Pulmonary Disease: An Application of a Joint Frailty-Logistic Model. Am J Epidemiol 2016; 184: 681–9."),
-                 sep = '<br/>'))
+      #azithro_rate_diff <- round(100 * (baselineResults$predicted_exac_rate - azithroResults$predicted_exac_rate), 0)
+      #azithro_severe_rate_diff <- round(100 * (baselineResults$predicted_severe_exac_rate - azithroResults$predicted_severe_exac_rate), 0)
+      #text <- paste0("Based on the MACRO trial, for every 100 people treated with Azithromycin (250mg/day) an average of ", azithro_rate_diff, " exacerbations will be prevented every year, of which ", 
+      #                azithro_severe_rate_diff , " are severe exacerbations.")
+      #treatmentTitle <- HTML(paste(tags$span(style="color:tomato", "Treatment Effect:")))
+      #HTML(paste(tags$strong(treatmentTitle), tags$strong(text), 
+      #           tags$a(href="https://www.nejm.org/doi/full/10.1056/NEJMoa1104623", target="_blank", "Reference: Albert et al., Azithromycin for prevention of exacerbations of COPD, New England Journal of Medicine 365.8 (2011): 689-698"),
+      #           tags$a(href="https://academic.oup.com/aje/article/184/9/681/2332840", target="_blank", "Reference: Sadatsafavi M, Sin DD, Zafari Z, et al. The Association Between Rate and Severity of Exacerbations in Chronic Obstructive Pulmonary Disease: An Application of a Joint Frailty-Logistic Model. Am J Epidemiol 2016; 184: 681–9."),
+      #           sep = '<br/>'))
       
-    })
+  #  })
     
     output$surfacePlot <- renderPlotly({
       
