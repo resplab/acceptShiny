@@ -471,7 +471,7 @@ server <- function(input, output, session) {
       baselineResults  <- results %>% mutate (Treatment = "Baseline")
       probabilities    <- baselineResults %>% select (Treatment, contains("probability"))
       rates            <- baselineResults %>% select (Treatment, contains("rate"))
-      
+
     } else {
    results <- results %>% select(-c(male, age, smoker, oxygen, statin, LAMA, LABA, ICS, FEV1, BMI, SGRQ, LastYrExacCount, 
                                      LastYrSevExacCount, randomized_azithromycin,	randomized_statin,	randomized_LAMA,	
@@ -521,9 +521,6 @@ server <- function(input, output, session) {
     
     output$severe_exac_risk <- renderPlot({
       tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
-      if (input$compareTreatmentRisk == 0) {
-        probabilities <- filter(probabilities, Treatment == "Baseline")
-      } 
       plotProb <- ggplot(probabilities , aes (x = Treatment)) + 
         geom_col(aes(y=100*predicted_severe_exac_probability, fill=Treatment), width = 0.7) + 
         geom_text(
@@ -550,10 +547,9 @@ server <- function(input, output, session) {
         
     output$exac_rate <- renderPlot({
       tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
-     # if (input$compareTreatmentRate == 0) {
-        rates<- filter(rates, Treatment == "Baseline")
-      #} 
-      upperInterval <- max (rates$predicted_exac_rate_upper_PI)
+
+      if (input$model != "ACCEPT 3.0 (Lim et al, 2025)") {upperInterval <- max (rates$predicted_exac_rate_upper_PI)} else {
+      upperInterval <- 2*max(rates$predicted_exac_rate)}
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_exac_rate, fill=Treatment), show.legend = T,  width = 0.7) + ylim(0, upperInterval) +
         geom_text(
@@ -580,10 +576,9 @@ server <- function(input, output, session) {
       
     output$severe_exac_rate <- renderPlot({
       tuftefont <- choose_font(c("Gill Sans MT", "Gill Sans", "GillSans", "Verdana", "serif"), quiet = FALSE)  
-      #if (input$compareTreatmentRate == 0) {
-        rates<- filter(rates, Treatment == "Baseline")
-      #} 
-      upperInterval <- max (rates$predicted_severe_exac_rate_upper_PI)
+      if (input$model != "ACCEPT 3.0 (Lim et al, 2025)") {upperInterval <- max (rates$predicted_severe_exac_rate_upper_PI)} else { 
+      upperInterval <- 2*max(rates$predicted_exac_rate) }
+
       plotProb <- ggplot(rates, aes (x = Treatment)) + 
         geom_col(aes(y=predicted_severe_exac_rate, fill=Treatment),  width = 0.7) + ylim(0, upperInterval) +
         geom_text(
@@ -611,8 +606,11 @@ server <- function(input, output, session) {
     #shinyjs::show("compareTreatmentRisk")
     #shinyjs::show("compareTreatmentRate")
     
+    shinyjs::disable("model") 
+    
+    if (input$model != "ACCEPT 3.0 (Lim et al, 2025)"){
     shinyjs::show("error_risk")
-    shinyjs::show("error_rate")
+    shinyjs::show("error_rate")}
     
     output$table_exac_risk <- renderTable({
       return (probabilities %>% mutate("1 Yr Exacerbation Risk (%)" = predicted_exac_probability*100, "1 Yr Severe Exacerbation Risk (%)" = predicted_severe_exac_probability*100) %>% select (Treatment, contains("Exacerbation")))
