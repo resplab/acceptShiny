@@ -18,6 +18,8 @@ For more information about the model and how to access it, please refer to the [
 
 Adibi A, Sin DD, Safari A, Johnson KM, Aaron SD, FitzGerald JM, Sadatsafavi M. The Acute COPD Exacerbation Prediction Tool (ACCEPT): a modelling study. The Lancet Respiratory Medicine. 2020 Oct 1;8(10):1013-21. doi:[10.1016/S2213-2600(19)30397-2](https://doi.org/10.1016/S2213-2600%2819%2930397-2)
 
+Safari A, Adibi A, Sin DD, Lee TY, Ho JK, Sadatsafavi M. ACCEPT 2· 0: recalibrating and externally validating the acute COPD exacerbation prediction tool (ACCEPT). EClinicalMedicine. 2022 Sep 1;51. doi:[10.1016/j.eclinm.2022.10157](https://doi.org/10.1016/j.eclinm.2022.101574)
+
 #### Bug Report
 
 Please report bugs and issues [here] (https://github.com/resplab/acceptShiny/issues).
