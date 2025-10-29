@@ -46,7 +46,7 @@ ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
-      selectInput("model", labelMandatory("Model"),list('ACCEPT 3.0 (Lim et al, 2025)','ACCEPT 2.0 (Safari et al, 2021)', 'ACCEPT (Adibi et al, 2020)'), selected = 'accept 2.0 (Safari et al, 2021)'),
+      selectInput("model", labelMandatory("Model"),list('ACCEPT 3.0 (Lim et al, 2025)','ACCEPT 2.0 (Safari et al, 2021)', 'ACCEPT (Adibi et al, 2020)'), selected = 'ACCEPT 2.0 (Safari et al, 2021)'),
       selectInput("country", labelMandatory("Country"),
                   list("ARG", "AUS", "BRA", "CAN", "COL", "DEU", "DNK", "ESP", "FRA", "GBR", "ITA", "JPN", "KOR", "MEX", "NLD", "NOR", "SWE", "USA", "Other"), selected = 'CAN'),
       shinyjs::hidden(numericInput("obs_modsev_risk", 
@@ -256,7 +256,7 @@ server <- function(input, output, session) {
   observe({
     if (input$model != "ACCEPT 3.0 (Lim et al, 2025)") {
     shinyjs::hide("country")
-}
+} else {shinyjs::show("country")}
   })    
   
   
