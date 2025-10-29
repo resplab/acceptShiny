@@ -255,8 +255,8 @@ server <- function(input, output, session) {
   
   observe({
     if (input$model != "ACCEPT 3.0 (Lim et al, 2025)") {
-    shinyjs::hide("country")
-} else {shinyjs::show("country")}
+    shinyjs::hide(id="country", anim = TRUE)
+} else {shinyjs::show(id="country", anim = TRUE)}
   })    
   
   
