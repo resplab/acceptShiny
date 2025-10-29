@@ -47,6 +47,11 @@ ui <- fluidPage(
     
     sidebarPanel(
       selectInput("model", labelMandatory("Model"),list('ACCEPT 3.0 (Lim et al, 2025)','ACCEPT 2.0 (Safari et al, 2021)', 'ACCEPT (Adibi et al, 2020)'), selected = 'accept 2.0 (Safari et al, 2021)'),
+      selectInput("country", labelMandatory("Country"),
+                  list("ARG", "AUS", "BRA", "CAN", "COL", "DEU", "DNK", "ESP", "FRA", "GBR", "ITA", "JPN", "KOR", "MEX", "NLD", "NOR", "SWE", "USA", "Other"), selected = 'CAN'),
+      shinyjs::hidden(numericInput("obs_modsev_risk", 
+                                   labelMandatory("Observed local moderate-to-severe exacerbation risk"), 
+                                   value=NA, min=0, max=1, step=0.05)),
       selectInput("male", labelMandatory("Gender"),list('','female', 'male')),
       numericInput("age", labelMandatory("Age (year)"), value = NA, min = 20, max = 100, step = 1),
       selectInput("smoker", labelMandatory("Is the patient currently a smoker?"),list('','yes', 'no')) %>% 
@@ -248,6 +253,19 @@ server <- function(input, output, session) {
     }
   })    
   
+  observe({
+    if (input$model != "ACCEPT 3.0 (Lim et al, 2025)") {
+    shinyjs::hide("country")
+}
+  })    
+  
+  
+  observe({
+    if ((input$model == "ACCEPT 3.0 (Lim et al, 2025)") &
+        (input$country=="Other")) {
+      shinyjs::show("obs_modsev_risk")
+    }
+  })   
   
   observe({
     if ((!is.na(input$LastYrSevExacCount) && (input$LastYrSevExacCount!="")  && (!is.na(input$LastYrExacCount)) && (!is.na(input$LastYrExacCount)))) {
@@ -408,6 +426,8 @@ server <- function(input, output, session) {
     on.exit(progress$close())
     #disabling inputs
     shinyjs::disable("male")  
+    shinyjs::disable("country") 
+    shinyjs::disable("obs_modsev_risk")
     shinyjs::disable("smoker")  
     shinyjs::disable("LastYrExacCount")  
     shinyjs::disable("LastYrSevExacCount")  
@@ -462,7 +482,11 @@ server <- function(input, output, session) {
     
     if (input$model == "ACCEPT (Adibi et al, 2020)") {results <- accept(patientData = patientData)}
     if (input$model == "ACCEPT 2.0 (Safari et al, 2021)") {results <- accept2(patientData = patientData)}
-    if (input$model == "ACCEPT 3.0 (Lim et al, 2025)") {results <- accept(newdata = patientData, version = "accept3", country = "CAN")}
+    if (input$model == "ACCEPT 3.0 (Lim et al, 2025)") {
+      if(input$country!="Other") {
+        results <- accept(newdata = patientData, version = "accept3", country = input$country)} else {
+        results <- accept(newdata = patientData, version = "accept3", obs_modsev_risk=input$obs_modsev_risk)  
+        }}
     
     progress$set(message = "plotting...", value = 0.90)    
     shinyjs::hide("background")
