@@ -60,7 +60,11 @@ ui <- fluidPage(
                type = "markdown",
                content = "smoker"),
       numericInput('FEV1', labelMandatory('Post-bronchodilator FEV1 (% predicted)'), value = NA, min = 0, max = 100, step = 1),
-      shinyjs::hidden(numericInput('mMRC', 'Please enter mMRC dyspnea scale', value = NA , min = 0, max = 4, step = 1)), 
+      shinyjs::hidden(numericInput('mMRC', labelMandatory('Please enter mMRC dyspnea scale'), value = NA , min = 0, max = 4, step = 1))%>% 
+        helper(icon = "question-circle",
+               colour = "black",
+               type = "markdown",
+               content = "mMRC"), 
       numericInput('SGRQ', 'St. Georges Respiratory Questionnaire Score (SGRQ)', value = NA, min = 0, max = 100, step = 1) %>% 
             helper(icon = "question-circle",
                    colour = "black",
