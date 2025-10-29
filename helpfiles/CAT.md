@@ -2,7 +2,6 @@
 
 ***
 
-Enter COPD Assessment Test (CAT) score, only if SGRQ is not available. The CAT questionnaire can be found [here](https://www.catestonline.org).
+Enter mMRC (Modified Medical Research Council) Dyspnea Scale. The mMRC scale can be found [here](https://www.pcrs-uk.org/mrc-dyspnoea-scale).
 
-The CAT score will be converted to SGRQ using data in the publication by  [Morishita-Katsu et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4940016/)
-
+Either mMRC or SGRQ should be provdied for ACCEPT v3.

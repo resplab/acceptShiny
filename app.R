@@ -60,6 +60,7 @@ ui <- fluidPage(
                type = "markdown",
                content = "smoker"),
       numericInput('FEV1', labelMandatory('Post-bronchodilator FEV1 (% predicted)'), value = NA, min = 0, max = 100, step = 1),
+      shinyjs::hidden(numericInput('mMRC', 'Please enter mMRC dyspnea scale', value = NA , min = 0, max = 4, step = 1)), 
       numericInput('SGRQ', 'St. Georges Respiratory Questionnaire Score (SGRQ)', value = NA, min = 0, max = 100, step = 1) %>% 
             helper(icon = "question-circle",
                    colour = "black",
@@ -125,8 +126,15 @@ ui <- fluidPage(
       ),
       
       shinyjs::hidden(
+        div(id = "mMRC_range",
+            HTML(paste(tags$span(style="color:red", "mMRC dyspnea scale must be between 0 and 4")))
+        )
+      ),
+      
+      
+      shinyjs::hidden(
         div(id = "CAT_SGRQ",
-            HTML(paste(tags$span(style="color:red", "Either SGRQ or CAT score must be entered.")))
+            HTML(paste(tags$span(style="color:red", "At least one symptom score (e.g., SGRQ, CAT, or mMRC) must be entered.")))
         )
       ),
       
@@ -256,14 +264,19 @@ server <- function(input, output, session) {
   observe({
     if (input$model != "ACCEPT 3.0 (Lim et al, 2025)") {
     shinyjs::hide(id="country", anim = TRUE)
-} else {shinyjs::show(id="country", anim = TRUE)}
+    shinyjs::hide(id="mMRC", anim = TRUE)
+    } else {
+  shinyjs::show(id="country", anim = TRUE)
+  shinyjs::show(id="mMRC", anim = TRUE) 
+  shinyjs::hide(id="SGRQ", anim = TRUE) 
+  shinyjs::hide(id="CAT", anim = TRUE) }
   })    
   
   
   observe({
     if ((input$model == "ACCEPT 3.0 (Lim et al, 2025)") &
         (input$country=="Other")) {
-      shinyjs::show("obs_modsev_risk")
+      shinyjs::show("obs_modsev_risk", anim = TRUE)
     }
   })   
   
@@ -302,10 +315,20 @@ server <- function(input, output, session) {
       }
     }
   })
+  
+  observe({
+    if (!is.na(input$mMRC) && (input$mMRC!="")) {
+      if ((input$mMRC< 0)  || (input$mMRC > 4))  {
+        shinyjs::show (id = "mMRC_range", anim = TRUE)}
+      else {
+        shinyjs::hide (id = "mMRC_range", anim = TRUE)
+      }
+    }
+  })
     
   observe({
-    sympChecker <- as.numeric (is.na(input$SGRQ) + is.na(input$CAT))
-      if (sympChecker  == 0 || sympChecker == 2)  {
+    sympChecker <- as.numeric (is.na(input$SGRQ) + is.na(input$CAT) + is.na(input$mMRC))
+      if (sympChecker  == 0 || sympChecker==3)  {
         shinyjs::show (id = "CAT_SGRQ", anim = TRUE)}
       else {
         shinyjs::hide (id = "CAT_SGRQ", anim = TRUE)
@@ -332,8 +355,8 @@ server <- function(input, output, session) {
   })  
   
   observe({
-    sympChecker <- as.numeric (is.na(input$SGRQ) + is.na(input$CAT))
-    if (!input$termsCheck || is.na(input$FEV1) || (input$FEV1 == "")  || (sympChecker == 2) || (sympChecker == 0) || 
+    sympChecker <- as.numeric (is.na(input$SGRQ) + is.na(input$CAT) + is.na(input$mMRC))
+    if (!input$termsCheck || is.na(input$FEV1) || (input$FEV1 == "")  || (sympChecker == 3) || (sympChecker == 0) || 
         is.na (input$age) || (input$age == "") || is.null (input$male) || (input$male == "") || 
         is.na (input$BMI) || input$BMI == "" || is.na(input$LastYrSevExacCount) || input$LastYrSevExacCount == "" ||
         is.na (input$statin) || input$statin == "" || is.na(input$LastYrExacCount) || input$LastYrExacCount == "" ||
@@ -432,6 +455,7 @@ server <- function(input, output, session) {
     shinyjs::disable("LastYrExacCount")  
     shinyjs::disable("LastYrSevExacCount")  
     shinyjs::disable("FEV1") 
+    shinyjs::disable("mMRC")
     shinyjs::disable("SGRQ") 
     shinyjs::disable("CAT")
     shinyjs::disable("age") 
@@ -459,6 +483,7 @@ server <- function(input, output, session) {
     patientData$BMI   <- input$BMI
     if (!is.na(input$SGRQ)) {patientData$SGRQ   <- input$SGRQ}
     if (is.na(input$SGRQ)) {patientData$SGRQ   <- 18.87 + 1.53*input$CAT} #based on https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4940016/
+    if (!is.na(input$mMRC)) {patientData$mMRC   <- input$mMRC}
     patientData$LastYrSevExacCount <- input$LastYrSevExacCount
     patientData$LastYrExacCount <- input$LastYrExacCount
     
